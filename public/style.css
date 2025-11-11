@@ -1,0 +1,30 @@
+.viz-placeholder {
+  height: 200px;
+  background-color: #f0f0f0;
+  border: 2px dashed #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #777;
+  font-weight: 500;
+}
+
+h1 {
+  font-family: "DM Serif Display", serif;
+  font-size: 3.5rem;
+  letter-spacing: 0.5px;
+}
+
+body {
+  font-family: "Source Sans 3", sans-serif;
+}
+
+.viz-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #fff;
+  border: 1px dashed #c9c9c9;
+  border-radius: 6px;
+  overflow: scroll;
+}
