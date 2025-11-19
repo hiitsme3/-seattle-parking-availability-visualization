@@ -1,335 +1,1892 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Final Project</title>
+<head>
+  <meta charset="utf-8" />
+  <title>CSE442 Final Project – Parking Hunt</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!------------------------------------------------------------>
-    <!-- You are free to use, change, and remix this template however you want! -->
-    <!-- This is a basic setup to make tool imports handy. -->
-    <!-- Adapt it to match your own visualization story and design. -->
-    <!-- so your project doesn’t look exactly the same as everyone else's :) -->
-    <!------------------------------------------------------------>
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
 
-    <!-- Bootstrap Framework: if you want to make HTML handling simpler -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #222;
+      background: #f5f5f5;
+    }
 
-    <link rel="stylesheet" href="style.css" />
+    /* --- Page header --- */
+    header {
+      padding: 16px 24px 8px;
+      background: #000000;
+      color: white;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 20px;
+      margin: 0 0 4px;
+    }
+    header a {
+      color: #d1c4ff;
+      text-decoration: none;
+      font-size: 13px;
+    }
+    header a:hover {
+      text-decoration: underline;
+    }
+    header h2 {
+      font-size: 18px;
+      margin: 8px 0 0;
+      font-weight: 500;
+    }
 
-    <!-- Google Font: DM Serif Display + Source Sans 3 (an example set of fonts that go together) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap"
-      rel="stylesheet"
-    />
+    main {
+      padding: 16px 24px 24px;
+    }
 
-    <!-- Loading Vega, Vega-Lite, Vega-Embed -->
-    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+    .intro {
+      max-width: 900px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
 
-    <!-- Loading D3 -->
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-  </head>
+    .layout {
+      display: flex;
+      gap: 12px;
+      min-height: 480px;
+    }
 
-  <body class="bg-light">
-    <div class="container py-5">
-      <h1 class="text-center mb-3 mt-5">Myé Finalé Projecc Vizualion Versa</h1>
-      <h5 class="text-center mb-5">538astin Santy</h5>
+    /* --- Map + sidebar layout --- */
+    #map-container {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 480px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
 
-      <div class="row g-4 mb-4">
-        <div class="col-md-6 offset-md-3">
-          <p>
-            On trouve de nombreuses bibliothèques de visualisation, mais est-il
-            possible de visualiser des données sur le web ? La réponse est oui.
-            Nous avons donc décidé de les tester concrètement, non pas pour les
-            comparer, mais pour explorer comment chacune donne vie aux données à
-            sa manière.
-          </p>
-        </div>
+    #map {
+      position: absolute;
+      top: 0; bottom: 80px; left: 320px; right: 0;
+      z-index: 1;
+    }
+
+    /* Legend overlay on right side of map */
+    #parking-legend {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #fff;
+      padding: 12px 14px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.12);
+      z-index: 1000;
+      pointer-events: auto;
+      max-width: 200px;
+      font-size: 12px;
+    }
+
+    #parking-legend h4 {
+      margin: 0 0 8px 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    #parking-legend .legend-item {
+      margin-bottom: 4px;
+      line-height: 1.4;
+    }
+
+    /* Explanation panel at bottom of map */
+    #parking-explanation {
+      position: absolute;
+      bottom: 0;
+      left: 320px;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 12px 16px;
+      border-top: 1px solid #ddd;
+      z-index: 1000;
+      pointer-events: auto;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    #parking-explanation h4 {
+      margin: 0 0 6px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    #parking-explanation p {
+      margin: 0;
+      color: #555;
+    }
+
+    #sidebar {
+      position: absolute;
+      top: 0; bottom: 0; left: 0;
+      width: 320px;
+      padding: 14px;
+      background: #fafafa;
+      border-right: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 2;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    /* Hide Leaflet default zoom controls only in parking map */
+    #map-container .leaflet-control-zoom {
+      display: none !important;
+    }
+
+    /* Zoom controls next to controls box */
+    #parking-zoom-controls {
+      position: absolute;
+      top: 0;
+      left: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px;
+      z-index: 1000;
+      pointer-events: auto;
+    }
+
+    .parking-zoom-btn {
+      width: 32px;
+      height: 32px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      user-select: none;
+      color: #333;
+    }
+
+    .parking-zoom-btn:hover {
+      background: #f5f5f5;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .parking-zoom-btn:active {
+      background: #e0e0e0;
+    }
+
+    #sidebar h3 {
+      font-size: 16px;
+      margin: 0;
+    }
+
+    #sidebar p {
+      margin: 3px 0;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+
+    #status {
+      padding: 8px 10px;
+      border-radius: 6px;
+      background: #ffe5e5;
+      font-size: 13px;
+    }
+    #status.ok {
+      background: #e5ffe7;
+    }
+
+    button {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      background: #333;
+      color: white;
+      align-self: flex-start;
+    }
+    button:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .legend {
+      font-size: 12px;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    .legend-circle {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .legend-circle.grey {
+      background-color: #777;
+    }
+    .legend-circle.blue {
+      background-color: #005eb8;
+    }
+    .legend-circle.red {
+      background-color: #cc0000;
+    }
+    .legend-circle.green {
+      background-color: #007a1f;
+    }
+
+    .note {
+      font-size: 12px;
+      color: #666;
+      margin-top: 8px;
+    }
+
+    /* Small screens */
+    @media (max-width: 800px) {
+      .layout {
+        flex-direction: column;
+      }
+      #map-container {
+        min-height: 520px;
+      }
+      #map {
+        left: 0;
+        right: 0;
+        bottom: 360px;
+      }
+      #parking-legend {
+        top: auto;
+        bottom: 280px;
+        right: 20px;
+        left: 20px;
+        max-width: none;
+      }
+      #parking-explanation {
+        bottom: 280px;
+        left: 0;
+        right: 0;
+      }
+      #parking-zoom-controls {
+        top: auto;
+        bottom: 280px;
+        left: 8px;
+      }
+      #sidebar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: auto;
+        height: 280px;
+        border-right: none;
+        border-top: 1px solid #ddd;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+    }
+  </style>
+
+  <!-- D3 for Curb Explorer -->
+  <script src="https://unpkg.com/d3@7"></script>
+
+  <!-- Styles for Curb Explorer section -->
+  <style>
+
+    /* ------- Title Bar ------- */
+    #curb-title { position:relative; text-align:center; background:#fff; padding:15px 20px; margin:0; 
+      font-size:20px; font-weight:600; color:#333; box-shadow:0 2px 4px rgba(0,0,0,.1) }
+
+    /* ------- Sidebar Filters ------- */
+    #curb-ui { position:absolute; top:10px; left:10px; bottom:10px; background:#fff; padding:12px 14px; 
+      border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,.12); z-index:10000; overflow-y:auto; 
+      max-width:320px; pointer-events:auto; transform:none !important }
+
+     /* ------- Map Container ------- */
+    #curb-map-container { position:relative; width:100%; height:calc(100vh - 190px); background:#fafafa }
+    #curb-map { width:100%; height:100%; z-index:1 }
+
+    /* ------- Filter & Checkbox UI ------- */
+    .filter-section { margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #e0e0e0 }
+    .filter-section:last-child { border-bottom:none; margin-bottom:0 }
+    .filter-section h3 { margin:0 0 8px 0; font-size:13px; font-weight:600; color:#333 }
+    .checkbox-container { display:flex; align-items:center; margin-bottom:6px; cursor:pointer }
+    .checkbox-container:hover { background:#f5f5f5; border-radius:4px }
+    .checkbox-container input[type=checkbox] { margin-right:8px; cursor:pointer }
+    .checkbox-container input[type=checkbox]:focus { outline:none }
+    .checkbox-container label { cursor:pointer; flex:1; display:flex; align-items:center }
+    .category-icon { font-size:16px; margin-right:6px; display:inline-block }
+    .select-all { font-size:11px; color:#666; margin-bottom:4px; cursor:pointer; text-decoration:underline }
+    .select-all:hover { color:#333 }
+    .select-all:focus { outline:none }
+
+    /* ------- Tooltip Styling ------- */
+    #curb-tooltip { position:fixed; background:rgba(0,0,0,0.85); color:#fff; padding:8px 10px; 
+      border-radius:4px; pointer-events:none; z-index:1000; font-size:12px; white-space:pre-line; 
+      box-shadow:0 2px 8px rgba(0,0,0,0.3); display:none }
+
+    /* ------- Zoom Buttons ------- */
+    #curb-zoom-controls { position:absolute; top:50%; right:20px; transform:translateY(-50%); z-index:10000; 
+      display:flex; flex-direction:column; gap:8px; pointer-events:auto }
+    .zoom-btn { width:40px; height:40px; background:#fff; border:1px solid #ddd; border-radius:4px; 
+      cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:20px; 
+      font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.1); user-select:none }
+    .zoom-btn:hover { background:#f5f5f5; box-shadow:0 2px 6px rgba(0,0,0,0.15) }
+    .zoom-btn:active { background:#e0e0e0 }
+    
+    /* ------- Result Counter ------- */
+    #curb-result-info { position:absolute; top:20px; right:20px; background:#fff; padding:8px 12px; 
+      border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,.12); z-index:10000; pointer-events:auto;
+      font-size:12px; color:#333 }
+    #curb-result-count { font-weight:600 }
+    #curb-fit-to-results:focus { outline:none }
+    #curb-fit-to-results:hover { background:#357abd }
+    #curb-fit-to-results:active { background:#2a5f8f }
+    #curb-fit-to-results:disabled { background:#ccc; cursor:not-allowed }
+    
+    /* ------- Legend ------- */
+    #curb-legend { position:absolute; bottom:20px; right:20px; background:#fff; padding:12px 14px; 
+      border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,.12); z-index:10000; pointer-events:auto;
+      max-width:200px; max-height:300px; overflow-y:auto; font-size:12px }
+    #curb-legend h3 { margin:0 0 8px 0; font-size:13px; font-weight:600; color:#333 }
+    .legend-item { display:flex; align-items:center; margin-bottom:6px }
+    .legend-color { width:16px; height:16px; border-radius:3px; margin-right:8px; border:1px solid #ddd; flex-shrink:0 }
+    .legend-label { color:#333; flex:1 }
+    
+  
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Seattle’s Parking System: Patterns and Experience</h1>
+    <h2>CSE 442 - Data Visualization (Fall 2025)</h2>
+  </header>
+
+  <main>
+    <section id="curb-explorer">
+    <section>
+    <h1>Exploring Seattle's Curb Space System</h1>
+
+      <p>
+        Seattle contains thousands of curb spaces and dozens of public garages, yet drivers often experience the system as chaotic and inconsistent. 
+        What looks abundant in the data can feel scarce behind the wheel. Much like the MBTA visualization revealed how subway behavior emerges from 
+        underlying structure, Seattle’s parking behavior is shaped by the spatial arrangement of curb rules and garage locations.
+        This visualization places both parking worlds—the curb and the garage—onto a single map to uncover patterns that are hard to see at street level.
+      </p>
+
+      <h2>Curb Spaces Across Seattle</h2>
+
+      <p>
+        Curb spaces are the first places drivers look, lining nearly every major neighborhood. But they are also the most fragmented part of the system: 
+        regulations change block by block, shifting between paid zones, time limits, loading areas, bus lanes, and other restrictions.
+      </p>
+
+      <p>
+        By coloring each curb space by district, the map makes these inconsistencies visible. Some neighborhoods have dense, orderly grids of paid parking, 
+        while others are dominated by long stretches of restricted or unavailable curb zones. What often feels like “no parking anywhere” is usually the 
+        result of this regulatory patchwork.
+      </p>
+
+      <h2>Public Garages and Lots</h2>
+
+      <p>
+        Garages form the opposite landscape—large, concentrated, and often hidden from a driver’s natural search pattern. A person circling for curb 
+        parking may pass several garages without noticing them, even when they are only a block away.
+      </p>
+
+      <p>
+        Plotted alongside the curb spaces, garages reveal a contrasting structure: downtown districts contain tight clusters of garage capacity, while 
+        other neighborhoods rely almost entirely on the curb. The map shows that a street with no usable curb spaces may still sit next to ample garage 
+        availability—yet drivers rarely treat the two as interchangeable.
+      </p>
+
+      <p>
+        <strong>
+          Before zooming into a single driver's experience, this section lets you explore how different curb categories and paid parking areas are distributed 
+          across Seattle, using the city's open curb-space and garage data.
+        </strong>
+      </p>
+    </section>
+
+
+<!--------- Title Header --------->
+<div id="curb-title"> Seattle Curb Spaces by Category and Paid Area </div>
+
+<!--------- Tooltip (Details on Hover) --------->
+<div id="curb-tooltip"></div>
+<div id="curb-map-container">
+  <!--------- Filter Panel (Categories + Paid Areas) --------->
+  <div id="curb-ui">
+    <div class="filter-section">
+      <h3>Curb Space Category</h3>
+      <div class="select-all" id="category-select-all">Select All</div>
+      <div class="select-all" id="category-deselect-all">Deselect All</div>
+      <div id="category-filters"></div>
+    </div>
+    <div class="filter-section">
+      <h3>Paid Area</h3>
+      <div class="select-all" id="paidarea-select-all">Select All</div>
+      <div class="select-all" id="paidarea-deselect-all">Deselect All</div>
+      <div id="paidarea-filters"></div>
+    </div>
+    <div class="filter-section">
+      <h3>Data Type</h3>
+      <div class="checkbox-container">
+        <input type="checkbox" id="show-curb-spaces" checked>
+        <label for="show-curb-spaces">
+          <span style="margin-right:6px">━━</span>
+          Curb Spaces (Lines)
+        </label>
       </div>
-
-      <!-- ===== Vega-Lite variants ===== -->
-      <div class="row g-4 mb-4">
-        <!-- VL #1: Minimal inline data -->
-        <div class="col-md-4">
-          <div class="card shadow">
-            <div class="card-body">
-              <div id="vl-basic" style="height: 300px"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- VL #2: fetch('data.csv') + manual CSV parser -->
-        <div class="col-md-4">
-          <div class="card shadow">
-            <div class="card-body">
-              <div id="vl-fetch" style="height: 300px"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- VL #3: URL-based CSV -->
-        <div class="col-md-4">
-          <div class="card shadow">
-            <div class="card-body">
-              <div id="vl-url" style="height: 300px"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="row g-4 mb-4">
-        <div class="col-md-12 text-center text-muted">
-          Vega-Lite vizualions: (1) inline data, (2) CSV via
-          <code>fetch()</code>, (3) CSV via Vega-Lite <code>data.url</code>.
-        </div>
-      </div>
-      <div class="row g-4 mb-5">
-        <div class="col-md-6 offset-md-3">
-          <p>
-            Mothaíonn Vega-Lite mar an pointe milis idir simplíocht agus
-            cumhacht. Is féidir liom cur síos a dhéanamh ar a bhfuil uaim, agus
-            tarraingíonn sé é. Oibríonn sonraí inlíne go han-mhaith, agus ní
-            chuireann aisghabháil ó CSVanna nó URLanna castacht leis ar chor ar
-            bith. Tá sé dearbhaitheach, glan, agus tugann sé torthaí amhairc
-            duit go tapa - cosúil le hinsint do do shonraí cad atá le déanamh in
-            ionad gach gluaiseacht a chódú.
-          </p>
-        </div>
-      </div>
-
-      <!-- ===== D3 variants ===== -->
-      <div class="row g-4 mb-4">
-        <!-- D3 #1: Minimal inline data -->
-        <div class="col-md-4">
-          <div class="card shadow">
-            <div class="card-body">
-              <svg id="d3-basic" style="height: 300px"></svg>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="card shadow">
-            <div class="card-body">
-              <svg id="d3-fetch" style="height: 300px"></svg>
-            </div>
-          </div>
-        </div>
-        <!-- D3 #2: fetch('data.csv') + D3's own parser -->
-        <div class="col-md-4">
-          <div class="card shadow">
-            <div class="card-body">
-              <svg id="d3-csv" style="height: 300px"></svg>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row g-4 mb-4">
-        <!-- D3 #3: D3 CSV -->
-        <div class="col-md-12 text-center text-muted">
-          D3 vizualions without any data, using fetch and using native D3 CSV.
-        </div>
-      </div>
-      <div class="row g-4 mb-5">
-        <div class="col-md-6 offset-md-3">
-          <p>
-            D3 er der ting blir virkelige. Du lager ikke bare et diagram – du
-            former det. Hvert rektangel, hver akse og hver overgang er din
-            kontroll. Det er mer kode, helt klart, men det gir deg også mer
-            frihet. Du begynner å sette pris på logikken bak visuell
-            historiefortelling. Det er der kunst møter ingeniørfag.
-          </p>
-        </div>
-      </div>
-
-      <!-- ===== Observable Embedding variants ===== -->
-      <div class="row g-4 mb-4">
-        <!-- Observable #1: Single Cell -->
-        <div class="col-md-6">
-          <div class="card shadow">
-            <div class="card-body">
-              <div class="viz-wrap">
-                <div id="observablehq-chartAnimate-710eaa66"></div>
-
-                <link
-                  rel="stylesheet"
-                  href="https://cdn.jsdelivr.net/npm/@observablehq/inspector@5/dist/inspector.css"
-                />
-                <script type="module">
-                  import {
-                    Runtime,
-                    Inspector,
-                  } from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@5/dist/runtime.js";
-                  import define from "https://api.observablehq.com/@lelkin/d3-tutorial-spring-2025.js?v=4";
-                  new Runtime().module(define, (name) => {
-                    if (name === "chartAnimate")
-                      return new Inspector(
-                        document.querySelector(
-                          "#observablehq-chartAnimate-710eaa66"
-                        )
-                      );
-                  });
-                </script>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Observable #2: Multi Cell -->
-        <div class="col-md-6">
-          <div class="card shadow">
-            <div class="card-body">
-              <div class="viz-wrap">
-                <!-- Observable Multicell Embeddings Start -->
-                <!-- Embeddings from: https://observablehq.com/@lelkin/d3-tutorial-spring-2025 -->
-
-                <!-- Step 1: Club two divs together -->
-                <div id="observablehq-viewof-yearDynamic-eebbcc4a"></div>
-                <div id="observablehq-chartDynamic-3a42edaf"></div>
-
-                <link
-                  rel="stylesheet"
-                  href="https://cdn.jsdelivr.net/npm/@observablehq/inspector@5/dist/inspector.css"
-                />
-                <script type="module">
-                  import {
-                    Runtime,
-                    Inspector,
-                  } from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@5/dist/runtime.js";
-                  import define from "https://api.observablehq.com/@lelkin/d3-tutorial-spring-2025.js?v=4";
-                  new Runtime().module(define, (name) => {
-                    // Step 2: Club the two if statements inside runtime together, as follows:
-                    if (name === "chartDynamic")
-                      return new Inspector(
-                        document.querySelector(
-                          "#observablehq-chartDynamic-3a42edaf"
-                        )
-                      );
-                    if (name === "viewof yearDynamic")
-                      return new Inspector(
-                        document.querySelector(
-                          "#observablehq-viewof-yearDynamic-eebbcc4a"
-                        )
-                      );
-                    // Step 3: Add return true;
-                    return true;
-                  });
-                </script>
-
-                <!-- Observable Multicell Embeddings End -->
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row g-4 mb-4">
-        <div class="col-md-12 text-center text-muted">
-          Observable embeddings demonstrating single cell and multicell embeds.
-        </div>
-      </div>
-      <div class="row g-4 mb-5">
-        <div class="col-md-6 offset-md-3">
-          <p>
-            Waarneembare Inbedding neem D3 en Vega-Lite na 'n ander vlak. Nou
-            kan ek aanhou herhaal, danksy lewende selle, reaktiwiteit en die
-            vermoë om direk in die notaboek te eksperimenteer - dit voel
-            lewendig. En dan hoef ek net die inbedkode te kopieer en te plak.
-            Geen nodigheid om met die plaaslike opstellingsgemors te sukkel nie.
-            Pragtig.
-          </p>
-        </div>
-      </div>
-
-      <!-- ===== Tableau ===== -->
-      <div class="row g-4 mb-4 justify-content-center">
-        <div class="col-md-6 col-lg-4">
-          <div class="card shadow">
-            <div class="card-body">
-              <div class="vis-wrap">
-                <div
-                  class="tableauPlaceholder"
-                  id="viz1761580567182"
-                  style="position: relative"
-                >
-                  <noscript
-                    ><a href="#"
-                      ><img
-                        alt="Sheet 1 "
-                        src="https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;te&#47;test_17615805316300&#47;Sheet1&#47;1_rss.png"
-                        style="border: none" /></a></noscript
-                  ><object class="tableauViz" style="display: none">
-                    <param
-                      name="host_url"
-                      value="https%3A%2F%2Fpublic.tableau.com%2F"
-                    />
-                    <param name="embed_code_version" value="3" />
-                    <param name="site_root" value="" />
-                    <param name="name" value="test_17615805316300&#47;Sheet1" />
-                    <param name="tabs" value="no" />
-                    <param name="toolbar" value="yes" />
-                    <param
-                      name="static_image"
-                      value="https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;te&#47;test_17615805316300&#47;Sheet1&#47;1.png"
-                    />
-                    <param name="animate_transition" value="yes" />
-                    <param name="display_static_image" value="yes" />
-                    <param name="display_spinner" value="yes" />
-                    <param name="display_overlay" value="yes" />
-                    <param name="display_count" value="yes" />
-                    <param name="language" value="en-US" />
-                    <param name="filter" value="publish=yes" />
-                  </object>
-                </div>
-                <script type="text/javascript">
-                  var divElement = document.getElementById("viz1761580567182");
-                  var vizElement = divElement.getElementsByTagName("object")[0];
-                  vizElement.style.width = "100%";
-                  vizElement.style.height =
-                    divElement.offsetWidth * 0.75 + "px";
-                  var scriptElement = document.createElement("script");
-                  scriptElement.src =
-                    "https://public.tableau.com/javascripts/api/viz_v1.js";
-                  vizElement.parentNode.insertBefore(scriptElement, vizElement);
-                </script>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row g-4 mb-4">
-        <div class="col-md-12 text-center text-muted">
-          Tableau dashboard embed as a single-panel example.
-        </div>
-      </div>
-      <div class="row g-4">
-        <div class="col-md-6 offset-md-3">
-          <p>
-            Tableau me adiuvat ad explorandum sine ulla necessitate scribendi
-            codicem. Possum trahere et deponere ut tabulas instrumentorum
-            celeriter creem — fabulas narrando et aliis ostendendo data pulchre
-            apparere posse sine ulla linea JavaScript tangenda.
-          </p>
-        </div>
+      <div class="checkbox-container">
+        <input type="checkbox" id="show-parking" checked>
+        <label for="show-parking">
+          <span style="margin-right:6px">●</span>
+          Parking Lots/Garages (Circles)
+        </label>
       </div>
     </div>
-    <footer class="bg-dark text-light py-4 mt-5">
-      <div class="container text-center">
-        <small class="text-secondary">CSE 442 Data Visualization</small>
-        <p class="mb-1">University of Washington</p>
+  </div>
+  <svg id="curb-map"></svg>
+
+  <!--------- Map Container + Zoom Controls --------->
+  <div id="curb-zoom-controls">
+    <div class="zoom-btn" id="curb-zoom-in">+</div>
+    <div class="zoom-btn" id="curb-zoom-out">−</div>
+  </div>
+  
+  <!--------- Result Counter --------->
+  <div id="curb-result-info">
+    <div id="curb-result-count">0 results</div>
+    <button id="curb-fit-to-results" disabled style="background:#4a90e2; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:500; width:100%; margin-top:6px">Fit to Results</button>
+  </div>
+  
+  <!--------- Legend --------->
+  <div id="curb-legend">
+    <h3>Districts</h3>
+    <div id="curb-legend-items"></div>
+  </div>
+</div>
+
+<section>
+  <h2>What This Reveals</h2>
+
+  <p>
+    Bringing curb spaces and garages together on one map highlights why parking often feels harder than the numbers suggest. 
+    Seattle may have plenty of total parking, but the experience is shaped by:
+  </p>
+
+  <ul>
+    <li>Curb spaces that feel convenient but are heavily regulated and unevenly distributed.</li>
+    <li>Garages that are abundant yet visually hidden and easy to miss while circling.</li>
+    <li>District differences that create distinct parking “personalities,” even between adjacent neighborhoods.</li>
+  </ul>
+
+  <p>
+    From above, it becomes clear that parking scarcity is less about quantity and more about how the system is organized. 
+    This visualization shows that the challenge begins long before a driver starts circling—within the structure and layout 
+    of Seattle’s parking network.
+  </p>
+</section>
+
+
+
+<!-------------------------------------------- JavaScript: D3 Setup, Data Fetching & Interactivity --------------------------------------------------->
+
+    </section>
+
+
+    <section>
+      <h1>The Parking Hunt</h1>
+    
+      <p>
+        Finding parking in downtown Seattle—especially near Pike Place Market—often feels unpredictable. Unlike transit systems with fixed routes, drivers navigate a constantly changing environment shaped by curb regulations, demand, and street layout. What seems straightforward on a map becomes a sequence of small decisions and reversals once the search begins.
+      </p>
+    
+      <p>
+        Much like the MBTA visualization reveals the daily rhythms of train movement, this animation illustrates the lived experience of parking: not delay, but uncertainty.
+      </p>
+    
+      <h2>What the Animation Shows</h2>
+    
+      <p>
+        The simulation begins with a driver just outside Pike Place Market. Their task is simple: find the nearest available parking space. The car moves realistically across the grid, checking curb spaces and garages one by one. Many look promising but turn out to be full. Others require awkward L-shaped routes because of one-way streets or block geometry.
+      </p>
+    
+      <p>
+        Each movement updates the “state” of the search, showing how quickly nearby options disappear and how the search radius expands with every failed attempt.
+      </p>
+    
+      <h2>A Typical Parking Search</h2>
+    
+      <p>
+        The visualization highlights what most Seattle drivers already know: the closest spot is rarely the easiest to reach. Several attempts may fail before one succeeds, and a single unavailable space can shift the entire route. This mirrors the MBTA’s observation that even small disruptions can ripple across a system, reshaping behavior far beyond the initial obstacle.
+      </p>
+    
+      <h2>Seeing the Experience From Above</h2>
+    
+      <p>
+        By watching the car wander block by block, viewers can see the structure behind the frustration. Clusters of full spots push the driver outward; isolated available spaces require long detours; garages and curb spaces influence the search differently. From above, the pattern becomes clear: parking difficulty is not random—it is built into the geometry and distribution of the system.
+      </p>
+    
+      <h2>Interactive Experience: Hunting for Parking in Downtown Seattle</h2>
+    
+        This explorable explanation shows what it feels like to search for parking near a popular destination in downtown Seattle. The map encodes a small subset of on-street paid curb spaces (grey dots) and public garages (blue dots), based on Seattle’s open parking data. Press “Start Animation” to follow one driver as they always select the nearest parking option. Most options turn out to be full or unusable, and the driver continues outward until finally reaching a spot that is actually available.
+      </p>
+    </section>
+
+    <section class="layout">
+      <div id="map-container">
+        <div id="map"></div>
+        
+        <!-- Legend overlay on right side -->
+        <div id="parking-legend">
+          <h4>Legend</h4>
+          <div class="legend-item">⭐ Destination (meeting point)</div>
+          <div class="legend-item">🚗 Driver (larger icon, moves block by block)</div>
+          <div class="legend-item"><span class="legend-circle grey"></span> Curb spaces (on-street parking)</div>
+          <div class="legend-item"><span class="legend-circle blue"></span> Public garages &amp; lots</div>
+          <div class="legend-item"><span class="legend-circle red"></span> Parking options that turned out to be unavailable</div>
+          <div class="legend-item"><span class="legend-circle green"></span> First spot that is actually available</div>
+        </div>
+
+        <!-- Explanation panel at bottom -->
+        <div id="parking-explanation">
+          <h4>Parking Hunt Simulation</h4>
+          <p>
+            Imagine you're meeting a friend near Pike Place Market. You start by checking the closest
+            curb spaces and garages. Each time you discover a spot is full, you move on to the next
+            nearest one. The route is a schematic block-by-block path (L-shaped moves), not exact GPS directions.
+            The focus is on how many nearby parking options fail before the driver finally finds one.
+          </p>
+        </div>
+
+        <aside id="sidebar">
+          <h3>Controls</h3>
+
+          <div class="stat-row">
+            <span>Attempts:</span>
+            <span id="attempt-count">0</span>
+          </div>
+          <div class="stat-row">
+            <span>Distance driven:</span>
+            <span id="distance-km">0.00 km</span>
+          </div>
+
+          <div id="status">Click "Start Animation" to begin.</div>
+
+          <div style="display: flex; gap: 8px;">
+            <button id="start-btn">Start Animation</button>
+            <button id="stop-btn" disabled>Stop Animation</button>
+          </div>
+        </aside>
+
+        <!-- Zoom controls next to controls box -->
+        <div id="parking-zoom-controls">
+          <div class="parking-zoom-btn" id="parking-zoom-in">+</div>
+          <div class="parking-zoom-btn" id="parking-zoom-out">−</div>
+        </div>
       </div>
-    </footer>
-  </body>
+    </section>
 
-  <script src="/js/vl-basic.js"></script>
-  <script src="/js/vl-fetch.js"></script>
-  <script src="/js/vl-url.js"></script>
+    <section class="intro">
+      <h2>Why This Matters</h2>
 
-  <script src="/js/d3-basic.js"></script>
-  <script src="/js/d3-fetch.js"></script>
-  <script src="/js/d3-csv.js"></script>
+      <p>
+        Understanding the parking experience as a dynamic process, rather than a static map,
+        highlights why parking frustration persists even in cities with abundant total supply.
+        The animation demonstrates that:
+      </p>
+
+      <ul>
+        <li>Difficulty finding parking is systemic, not just anecdotal.</li>
+        <li>Curb regulations create invisible barriers that shape where drivers look.</li>
+        <li>The nearest space is not always the most accessible.</li>
+        <li>Even short trips often involve multiple failed attempts before success.</li>
+      </ul>
+
+      <p>
+        By connecting the lived experience of the driver with the spatial patterns shown in the
+        first visualization, the Parking Hunt illustrates how the design and distribution of
+        curb and garage spaces influence everyday behavior.
+      </p>
+    </section>
+
+  </main>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <script>
+    // Destination near Pike Place Market
+    const destination = L.latLng(47.6090, -122.3419);
+
+    // Hand-picked curb-space-like points
+    const curbSpaces = [
+      [47.6095, -122.3415],
+      [47.6097, -122.3395],
+      [47.6088, -122.3385],
+      [47.6079, -122.3402],
+      [47.6102, -122.3388],
+      [47.6107, -122.3409],
+      [47.6083, -122.3423]
+    ];
+
+    // Hand-picked garage-like points
+    const garages = [
+      [47.6103, -122.3377],
+      [47.6089, -122.3369],
+      [47.6077, -122.3391],
+      [47.6112, -122.3399]
+    ];
+
+    // Will be built dynamically: nearest parking options (curb + garage)
+    let logicalAttempts = []; // {result: 'fail'|'success', kind:'curb'|'garage', latlng}
+
+    // --- Leaflet map ---
+    const map = L.map("map", {
+      zoomControl: false
+    }).setView([47.6088, -122.3400], 15);
+    
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
+
+    // De-emphasize basemap
+    const tilePane = map.getPanes().tilePane;
+    tilePane.style.filter = "grayscale(1)";
+    tilePane.style.opacity = "0.6";
+
+    // Zoom controls - wait for DOM to be ready
+    setTimeout(() => {
+      const zoomInBtn = document.getElementById("parking-zoom-in");
+      const zoomOutBtn = document.getElementById("parking-zoom-out");
+      if (zoomInBtn) {
+        zoomInBtn.addEventListener("click", () => {
+          map.zoomIn();
+        });
+      }
+      if (zoomOutBtn) {
+        zoomOutBtn.addEventListener("click", () => {
+          map.zoomOut();
+        });
+      }
+    }, 100);
+
+    // Destination marker
+    const destIcon = L.divIcon({
+      className: "",
+      html: "⭐",
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
+    });
+    L.marker(destination, { icon: destIcon })
+      .addTo(map)
+      .bindPopup("Destination");
+
+    // Keep references to markers so we can recolor them
+    const curbMarkers = [];
+    const garageMarkers = [];
+
+    // Draw curb spaces
+    curbSpaces.forEach(([lat, lng]) => {
+      const marker = L.circleMarker([lat, lng], {
+        radius: 3,
+        color: "#777",
+        weight: 1,
+        fillOpacity: 0.7
+      }).addTo(map);
+      curbMarkers.push({ latlng: L.latLng(lat, lng), marker });
+    });
+
+    // Draw garages
+    garages.forEach(([lat, lng]) => {
+      const marker = L.circleMarker([lat, lng], {
+        radius: 5,
+        color: "#005eb8",
+        weight: 1,
+        fillOpacity: 0.9
+      })
+        .addTo(map)
+        .bindPopup("Public garage");
+      garageMarkers.push({ latlng: L.latLng(lat, lng), marker });
+    });
+
+    // Bigger car icon
+    const carIcon = L.divIcon({
+      className: "",
+      html: "🚗",
+      iconSize: [50, 50],
+      iconAnchor: [12, 12]
+    });
+
+    let carMarker = L.marker(destination, { icon: carIcon }).addTo(map);
+
+    // --- helpers & UI ---
+    function haversine(p1, p2) {
+      const R = 6371; // km
+      const toRad = d => (d * Math.PI) / 180;
+      const dLat = toRad(p2.lat - p1.lat);
+      const dLng = toRad(p2.lng - p1.lng);
+      const lat1 = toRad(p1.lat);
+      const lat2 = toRad(p2.lat);
+
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    // Linear interpolation
+    function interpolate(p1, p2, steps) {
+      const pts = [];
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const lat = p1.lat + (p2.lat - p1.lat) * t;
+        const lng = p1.lng + (p2.lng - p1.lng) * t;
+        pts.push(L.latLng(lat, lng));
+      }
+      return pts;
+    }
+
+    // Find nearest entry in an array of {latlng, kind}
+    function findNearestEntry(list, current) {
+      let bestIndex = -1;
+      let bestDist = Infinity;
+      list.forEach((entry, idx) => {
+        const d = haversine(current, entry.latlng);
+        if (d < bestDist) {
+          bestDist = d;
+          bestDist = d;
+        }
+      });
+    }
+
+    // Find nearest {latlng, marker} in marker list
+    function findNearestMarker(list, latlng) {
+      let best = null;
+      let bestDist = Infinity;
+      list.forEach(entry => {
+        const d = haversine(entry.latlng, latlng);
+        if (d < bestDist) {
+          bestDist = d;
+          best = entry;
+        }
+      });
+      return best;
+    }
+
+    const attemptCountSpan = document.getElementById("attempt-count");
+    const distanceSpan = document.getElementById("distance-km");
+    const statusDiv = document.getElementById("status");
+    const startBtn = document.getElementById("start-btn");
+    const stopBtn = document.getElementById("stop-btn");
+
+    function setStatus(text, ok = false) {
+      statusDiv.textContent = text;
+      statusDiv.classList.toggle("ok", ok);
+    }
+
+    // --- Build "nearest-first" attempts from all parking options ---
+    // Tries curb spaces first (nearest to destination), then visits nearest garage
+    function buildLogicalAttempts(maxFails) {
+      logicalAttempts = [];
+
+      // Build list of curb spaces and sort by distance to destination
+      const curbOptions = [];
+      curbSpaces.forEach(([lat, lng]) => {
+        curbOptions.push({ latlng: L.latLng(lat, lng), kind: "curb" });
+      });
+      curbOptions.sort((a, b) => {
+        const distA = haversine(destination, a.latlng);
+        const distB = haversine(destination, b.latlng);
+        return distA - distB;
+      });
+
+      // Build list of garages and sort by distance to destination
+      const garageOptions = [];
+      garages.forEach(([lat, lng]) => {
+        garageOptions.push({ latlng: L.latLng(lat, lng), kind: "garage" });
+      });
+      garageOptions.sort((a, b) => {
+        const distA = haversine(destination, a.latlng);
+        const distB = haversine(destination, b.latlng);
+        return distA - distB;
+      });
+
+      // Try curb spaces first (up to maxFails or all of them)
+      const curbFailCount = Math.min(maxFails, curbOptions.length);
+      for (let i = 0; i < curbFailCount; i++) {
+        logicalAttempts.push({
+          result: "fail",
+          kind: "curb",
+          latlng: curbOptions[i].latlng
+        });
+      }
+
+      // After trying curb spaces, visit the nearest garage as the success
+      if (garageOptions.length > 0) {
+        logicalAttempts.push({
+          result: "success",
+          kind: "garage",
+          latlng: garageOptions[0].latlng
+        });
+      } else if (curbOptions.length > curbFailCount) {
+        // Fallback: if no garages, use next curb space
+        logicalAttempts.push({
+          result: "success",
+          kind: "curb",
+          latlng: curbOptions[curbFailCount].latlng
+        });
+      }
+    }
+
+    // --- Build L-shaped animation path ---
+    let animationPoints = [];
+    let attemptEvents = [];
+
+    function buildAnimationPath() {
+      animationPoints = [destination];
+      attemptEvents = [];
+
+      let current = destination;
+      let attemptNumber = 0;
+      const stepsPerLeg = 15;
+
+      for (const attempt of logicalAttempts) {
+        attemptNumber += 1;
+        const target = attempt.latlng;
+
+        // L-shape: first vertical (same lng), then horizontal (same lat)
+        const mid = L.latLng(target.lat, current.lng);
+
+        const leg1 = interpolate(current, mid, stepsPerLeg).slice(1);
+        const leg2 = interpolate(mid, target, stepsPerLeg).slice(1);
+
+        animationPoints.push(...leg1, ...leg2);
+        
+        // Ensure the final point is exactly the target (for accuracy)
+        animationPoints[animationPoints.length - 1] = target;
+
+        const endIndex = animationPoints.length - 1;
+        attemptEvents.push({
+          index: endIndex,
+          attemptNumber,
+          result: attempt.result,
+          kind: attempt.kind,
+          target
+        });
+
+        current = target;
+      }
+    }
+
+    // --- Animation state ---
+    let animIndex = 0;
+    let animTimer = null;
+    let totalDistance = 0;
+
+    function resetMarkers() {
+      curbMarkers.forEach(({ marker }) =>
+        marker.setStyle({ color: "#777", fillOpacity: 0.7, radius: 3 })
+      );
+      garageMarkers.forEach(({ marker }) =>
+        marker.setStyle({ color: "#005eb8", fillOpacity: 0.9, radius: 5 })
+      );
+    }
+
+    function stopAnimation() {
+      if (animTimer) {
+        clearInterval(animTimer);
+        animTimer = null;
+      }
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      setStatus("Animation stopped.", false);
+    }
+
+    function resetAnimation() {
+      if (animTimer) {
+        clearInterval(animTimer);
+        animTimer = null;
+      }
+      // Try up to 8 nearest options before success (tweakable)
+      buildLogicalAttempts(8);
+      buildAnimationPath();
+      resetMarkers();
+      animIndex = 0;
+      totalDistance = 0;
+      carMarker.setLatLng(destination);
+      attemptCountSpan.textContent = "0";
+      distanceSpan.textContent = "0.00 km";
+      setStatus("Click \"Start Animation\" to begin.", false);
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    }
+
+    function startAnimation() {
+      resetAnimation();
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      setStatus("Starting near your destination…");
+
+      let prevPos = animationPoints[0];
+      let currentAttempts = 0;
+
+      animTimer = setInterval(() => {
+        if (animIndex >= animationPoints.length - 1) {
+          clearInterval(animTimer);
+          animTimer = null;
+          setStatus(
+            "Finally found an available spot – but only after trying many nearby options.",
+            true
+          );
+          startBtn.disabled = false;
+          stopBtn.disabled = true;
+          return;
+        }
+
+        animIndex += 1;
+        const pos = animationPoints[animIndex];
+
+        totalDistance += haversine(prevPos, pos);
+        prevPos = pos;
+
+        carMarker.setLatLng(pos);
+        distanceSpan.textContent = totalDistance.toFixed(2) + " km";
+
+        // Did we reach the end of an attempt?
+        const event = attemptEvents.find(e => e.index === animIndex);
+        if (event) {
+          // Ensure car is positioned exactly at the target parking spot
+          carMarker.setLatLng(event.target);
+          
+          currentAttempts = event.attemptNumber;
+          attemptCountSpan.textContent = String(currentAttempts);
+
+          const isCurb = event.kind === "curb";
+          const markerList = isCurb ? curbMarkers : garageMarkers;
+          const match = findNearestMarker(markerList, event.target);
+
+          if (event.result === "fail") {
+            if (match) {
+              match.marker.setStyle({
+                color: "#cc0000",
+                fillOpacity: 0.9,
+                radius: isCurb ? 4 : 6
+              });
+            }
+            const kindLabel = isCurb ? "curb space" : "garage";
+            setStatus(
+              `Attempt ${currentAttempts}: nearest ${kindLabel} is unavailable – moving on to the next closest option…`
+            );
+          } else if (event.result === "success") {
+            if (match) {
+              match.marker.setStyle({
+                color: "#007a1f",
+                fillOpacity: 0.95,
+                radius: isCurb ? 5 : 7
+              });
+            }
+            const kindLabel = isCurb ? "curb space" : "garage";
+            setStatus(
+              `Attempt ${currentAttempts}: finally found an available ${kindLabel}.`,
+              true
+            );
+          }
+        }
+      }, 120); // smooth, blocky motion
+    }
+
+    startBtn.addEventListener("click", startAnimation);
+    stopBtn.addEventListener("click", stopAnimation);
+    resetAnimation();
+  </script>
+
+
+  <!-- Curb Explorer (D3-based) -->
+<script>
+  // ------- Endpoints (ArcGIS GeoJSON) -------
+  const BASEx = "https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/2020_Census_Block_Groups_-_Seattle/FeatureServer/46/query?where=1%3D1&outFields=*&returnGeometry=true&outSR=4326&f=geojson";
+  const CURBS = "https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/Paid_Area_Curb_Spaces/FeatureServer/0/query?where=1%3D1&outFields=*&returnGeometry=true&outSR=4326&f=geojson";
+  const PARKING = "https://services.arcgis.com/ZOyb2t4B0UYuYNYH/ArcGIS/rest/services/Public_Garages_and_Parking_Lots/FeatureServer/1/query?where=1%3D1&outFields=*&outSR=4326&f=geojson";
+  
+  // ------- SVG + Groups -------
+  const svg = d3.select('#curb-map');
+  const gRoot = svg.append('g');      // zoomed container
+  const gTiles = gRoot.append('g');   // map tiles
+  const gBase = gRoot.append('g');    // basemap polygons (kept for fallback)
+  const gLines = gRoot.append('g');   // curb lines
+  const gLabels = gRoot.append('g');  // street name labels
+  const gParking = gRoot.append('g'); // parking garages and lots
+  
+  // ------- Size & Resize -------
+  function size() {
+    const w = window.innerWidth, h = window.innerHeight;
+    svg.attr('width', w).attr('height', h);
+    projection.translate([w/2, h/2]);
+    redraw(); // recompute paths when viewport changes
+  }
+  window.addEventListener('resize', size);
+  
+  // ------- Projection & Path -------
+  const projection = d3.geoMercator()
+    .center([-122.335, 47.61])
+    .scale(135000);
+  
+  const path = d3.geoPath(projection);
+  
+  // ------- Zoom (pan+zoom) -------
+  const zoom = d3.zoom()
+    .scaleExtent([1, 64]) // Prevent zooming out too far (minimum scale is 1)
+    .on('zoom', (ev) => {
+      gRoot.attr('transform', ev.transform);
+      // Keep strokes readable as we zoom - update dash pattern based on SPACELENGTH
+      // Stroke width: thicker when zoomed out, thinner when zoomed in
+      gLines.selectAll('path').each(function(d) {
+        const props = d.properties || {};
+        const length = props.SPACELENGTH ? parseFloat(props.SPACELENGTH) : null;
+        const dashLength = length && !isNaN(length) && length > 0 
+          ? spaceLengthScale(length) / ev.transform.k
+          : 20 / ev.transform.k; // default dash length
+        const gap = 4 / ev.transform.k;
+        d3.select(this).attr('stroke-dasharray', `${dashLength} ${gap}`);
+        d3.select(this).attr('stroke-width', 1 / Math.sqrt(ev.transform.k));
+      });
+      gBase.selectAll('path').attr('stroke-width', 0.6 / ev.transform.k);
+      // Scale label font size with zoom
+      gLabels.selectAll('text').attr('font-size', `${12 / ev.transform.k}px`);
+      // Scale parking circles with zoom (uniform size - smaller to not overpower curb spaces)
+      gParking.selectAll('circle').attr('r', 2.5 / Math.sqrt(ev.transform.k));
+    });
+  
+  svg.call(zoom);
+  
+  // ------- Fit to Results Function -------
+  function fitToResults() {
+    if (filtered.length === 0) return;
+    
+    // Get SVG dimensions
+    const width = +svg.attr('width');
+    const height = +svg.attr('height');
+    
+    // Calculate geographic bounds first for accuracy
+    const geoBounds = d3.geoBounds({ type: 'FeatureCollection', features: filtered });
+    const [[lon0, lat0], [lon1, lat1]] = geoBounds;
+    
+    // Calculate geographic center
+    const centerLon = (lon0 + lon1) / 2;
+    const centerLat = (lat0 + lat1) / 2;
+    
+    // Get bounds in screen coordinates using path.bounds() for pixel-perfect accuracy
+    const pathBounds = path.bounds({ type: 'FeatureCollection', features: filtered });
+    
+    // Extract bounds coordinates
+    const x0 = pathBounds[0][0];
+    const y0 = pathBounds[0][1];
+    const x1 = pathBounds[1][0];
+    const y1 = pathBounds[1][1];
+    
+    // Calculate bounds dimensions
+    const boundsWidth = x1 - x0;
+    const boundsHeight = y1 - y0;
+    
+    // Handle edge case: if bounds are too small, use minimum scale
+    if (boundsWidth < 1 || boundsHeight < 1) {
+      const center = projection([centerLon, centerLat]);
+      svg.transition()
+        .duration(750)
+        .call(
+          zoom.transform,
+          d3.zoomIdentity
+            .translate(width / 2 - center[0] * 32, height / 2 - center[1] * 32)
+            .scale(32)
+        );
+      return;
+    }
+    
+    // Calculate center of bounds in screen coordinates
+    const boundsCenterX = (x0 + x1) / 2;
+    const boundsCenterY = (y0 + y1) / 2;
+    
+    // Use smaller padding for more accurate fit
+    const padding = 0.10;
+    const paddedWidth = width * (1 - 2 * padding);
+    const paddedHeight = height * (1 - 2 * padding);
+    
+    // Calculate scale needed to fit bounds with padding
+    const scaleX = paddedWidth / boundsWidth;
+    const scaleY = paddedHeight / boundsHeight;
+    const targetScale = Math.min(scaleX, scaleY);
+    
+    // Zoom out a bit more (multiply by 0.90 to show more area around the results)
+    const adjustedScale = targetScale * 0.90;
+    
+    // Constrain scale to zoom extent
+    const clampedScale = Math.max(1, Math.min(64, adjustedScale));
+    
+    // Calculate translate to center the bounds
+    // After scaling, we want the bounds center to be at screen center
+    const tx = width / 2 - boundsCenterX * clampedScale;
+    // Shift view down slightly (showing more bottom area)
+    const ty = height / 2 - boundsCenterY * clampedScale - (height * 0.10);
+    
+    // Apply transform with smooth transition
+    svg.transition()
+      .duration(750)
+      .ease(d3.easeCubicOut)
+      .call(
+        zoom.transform,
+        d3.zoomIdentity
+          .translate(tx, ty)
+          .scale(clampedScale)
+      );
+  }
+  
+  // ------- Update Result Counter -------
+  function updateResultCounter() {
+    const countEl = document.getElementById('curb-result-count');
+    const fitBtn = document.getElementById('curb-fit-to-results');
+    
+    if (countEl) {
+      countEl.textContent = `${filtered.length} result${filtered.length !== 1 ? 's' : ''}`;
+    }
+    
+    if (fitBtn) {
+      fitBtn.disabled = filtered.length === 0;
+    }
+  }
+  
+  // ------- Zoom Controls -------
+  // Wait for DOM to be ready
+  setTimeout(() => {
+    document.getElementById('curb-zoom-in').addEventListener('click', () => {
+      svg.transition().duration(200).call(zoom.scaleBy, 1.5);
+    });
+    document.getElementById('curb-zoom-out').addEventListener('click', () => {
+      svg.transition().duration(200).call(zoom.scaleBy, 1/1.5);
+    });
+    document.getElementById('curb-fit-to-results').addEventListener('click', () => {
+      fitToResults();
+    });
+  }, 0);
+  
+  // ------- Data holders -------
+  let baseFeatures = [];
+  let curbFeatures = [];
+  let parkingFeatures = [];
+  let filtered = [];
+  let selectedCategories = new Set(); // selected CATEGORY values (codes)
+  let selectedPaidAreas = new Set(); // selected PAIDAREA values
+  let showCurbSpaces = true; // toggle for showing curb spaces
+  let showParking = true; // toggle for showing parking
+  let totalUniquePaidAreas = 0; // total count of unique paid areas (for checking if all are selected)
+  let spaceLengthScale = d3.scaleLinear().range([20, 100]); // dash length range (visual length indicator) - shorter spaces get smaller dashes, longer spaces get larger dashes
+  const tooltip = d3.select('#curb-tooltip');
+  
+  // ------- Helper function to calculate distance between two points (in degrees) -------
+  function geoDistance(coord1, coord2) {
+    const [lon1, lat1] = coord1;
+    const [lon2, lat2] = coord2;
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // distance in km
+  }
+  
+  // ------- Function to determine district for a parking point based on nearby curb spaces -------
+  function getDistrictForParking(parkingCoords, curbFeatures, searchRadiusKm = 0.3) {
+    // Find all curb spaces within search radius by checking multiple points along each line
+    const nearbyCurbs = [];
+    
+    curbFeatures.forEach(curb => {
+      const district = curb.properties?.PRIMARYDISTRICTCD;
+      if (!district) return;
+      
+      let minDistance = Infinity;
+      let curbCoords = null;
+      
+      // Extract coordinates from geometry
+      if (curb.geometry?.type === 'LineString' && curb.geometry.coordinates) {
+        const coords = curb.geometry.coordinates;
+        // Check start, middle, and end points (and a few in between for longer lines)
+        const checkPoints = [];
+        if (coords.length > 0) {
+          checkPoints.push(coords[0]); // start
+          if (coords.length > 1) {
+            checkPoints.push(coords[coords.length - 1]); // end
+          }
+          // Add midpoint and quarter points
+          const midIndex = Math.floor(coords.length / 2);
+          checkPoints.push(coords[midIndex]);
+          if (coords.length > 3) {
+            const q1Index = Math.floor(coords.length / 4);
+            const q3Index = Math.floor(coords.length * 3 / 4);
+            checkPoints.push(coords[q1Index], coords[q3Index]);
+          }
+        }
+        
+        // Find minimum distance to any point on this curb line
+        checkPoints.forEach(point => {
+          const distance = geoDistance(parkingCoords, point);
+          if (distance < minDistance) {
+            minDistance = distance;
+            curbCoords = point;
+          }
+        });
+      } else if (curb.geometry?.type === 'MultiLineString' && curb.geometry.coordinates) {
+        // Check first point of each line segment
+        curb.geometry.coordinates.forEach(line => {
+          if (line && line.length > 0) {
+            const distance = geoDistance(parkingCoords, line[0]);
+            if (distance < minDistance) {
+              minDistance = distance;
+              curbCoords = line[0];
+            }
+          }
+        });
+      }
+      
+      if (curbCoords && minDistance <= searchRadiusKm) {
+        nearbyCurbs.push({ district, distance: minDistance });
+      }
+    });
+    
+    if (nearbyCurbs.length === 0) return null;
+    
+    // Sort by distance and use the district of the nearest curb space
+    nearbyCurbs.sort((a, b) => a.distance - b.distance);
+    return nearbyCurbs[0].district;
+  }
+  
+  // ------- Color scale for districts -------
+  // Use a high-contrast color palette for distinct district colors (no red colors)
+  // Gray (#555555) replaced with yellow (#FFD700) for better visibility
+  const districtColors = d3.scaleOrdinal()
+    .domain([]) // will be populated from data
+    .range([
+      '#0066CC', '#FF00FF', '#00CC00', '#9900FF', '#CC00CC', '#FFD700', '#FF33FF', '#0066FF',
+      '#00FF99', '#FF0099', '#6600FF', '#00FF66', '#FFD700', '#FFD700', '#9900CC', '#FFD700',
+      '#FF33FF', '#66CC00', '#0066FF', '#FFD700', '#FF0099', '#6600FF', '#00FF99', '#FFD700',
+      '#FF33FF', '#0066CC', '#00FF66', '#9900FF', '#FF00FF', '#FFD700', '#CC00CC', '#FFD700',
+      '#9900CC', '#FFD700', '#FF33FF', '#66CC00', '#FFD700', '#0066FF', '#FFD700', '#00FF99'
+    ]);
+  
+  // ------- Category Mapping (Code -> Full Name & Icon) -------
+  const categoryMapping = {
+    'BIKE': { name: 'Bike', icon: '🚴' },
+    'BUS': { name: 'Shuttle/Bus Zone', icon: '🚌' },
+    'CARPOOL': { name: 'Carpool', icon: '🚗' },
+    'CS': { name: 'Car Share', icon: '🤝' },
+    'DP': { name: 'Disabled Parking', icon: '♿' },
+    'GOVT': { name: 'Government Vehicles', icon: '🏛️' },
+    'LOAD': { name: 'Load/Unload Zone', icon: '📦' },
+    'NP': { name: 'No Parking', icon: '🚫' },
+    'NS': { name: 'No Stopping', icon: '🛑' },
+    'PAID': { name: 'Paid Parking', icon: '💰' },
+    'RPZ': { name: 'RPZ Parking', icon: '🅿️' },
+    'TL': { name: 'Time Limit', icon: '⏱️' },
+    'UNR': { name: 'Unrestricted', icon: '🟢' },
+    'ZONE': { name: 'Other Zone', icon: '⬜️' }
+  };
+  
+  // ------- Load data -------
+  Promise.all([
+    fetch(BASEx).then(r => r.json()),
+    fetch(CURBS).then(r => r.json()),
+    fetch(PARKING).then(r => r.json())
+  ]).then(([base, curb, parking]) => {
+    baseFeatures = base.features ?? [];
+    curbFeatures = curb.features ?? [];
+    parkingFeatures = parking.features ?? [];
+    
+    // Filter out features with N/A or empty PAIDAREA from the start
+    curbFeatures = curbFeatures.filter(f => {
+      const props = f.properties || {};
+      const paidArea = props.PAIDAREA;
+      
+      // Check if PAIDAREA is invalid (null, empty, or N/A - case insensitive)
+      const paidAreaStr = paidArea ? String(paidArea).trim().toUpperCase() : '';
+      if (!paidArea || paidAreaStr === '' || paidAreaStr === 'N/A' || paidAreaStr === 'NA') {
+        return false;
+      }
+      
+      return true;
+    });
+    
+    filtered = curbFeatures;
+    
+    // Determine district for each parking location based on nearby curb spaces
+    parkingFeatures.forEach(parking => {
+      const coords = parking.geometry?.coordinates;
+      if (coords && coords.length >= 2) {
+        const district = getDistrictForParking([coords[0], coords[1]], curbFeatures);
+        // Store district in properties for later use
+        if (!parking.properties) parking.properties = {};
+        parking.properties._DISTRICT = district;
+      }
+    });
+  
+    // Populate color scale domain with unique district codes
+    const uniqueDistricts = [...new Set(curbFeatures
+      .map(f => f.properties?.PRIMARYDISTRICTCD)
+      .filter(d => d != null && d !== ''))].sort();
+    districtColors.domain(uniqueDistricts);
+    
+    // Calculate SPACELENGTH scale
+    const spaceLengths = curbFeatures
+      .map(f => {
+        const len = f.properties?.SPACELENGTH;
+        return len != null && len !== '' ? parseFloat(len) : null;
+      })
+      .filter(d => d != null && !isNaN(d) && d > 0);
+    
+    if (spaceLengths.length > 0) {
+      const minLength = d3.min(spaceLengths);
+      const maxLength = d3.max(spaceLengths);
+      spaceLengthScale.domain([minLength, maxLength]);
+    }
+    
+    // Extract unique CATEGORY values (codes)
+    const uniqueCategories = [...new Set(curbFeatures
+      .map(f => f.properties?.CATEGORY)
+      .filter(d => d != null && d !== ''))].sort();
+    
+    // Extract unique PAIDAREA values
+    const uniquePaidAreas = [...new Set(curbFeatures
+      .map(f => f.properties?.PAIDAREA)
+      .filter(d => d != null && d !== ''))].sort();
+    
+    // Store total count for checking if all are selected
+    totalUniquePaidAreas = uniquePaidAreas.length;
+  
+    // Initialize all as selected by default
+    uniqueCategories.forEach(cat => selectedCategories.add(cat));
+    uniquePaidAreas.forEach(area => selectedPaidAreas.add(area));
+  
+    // Build checkbox filters
+    buildCategoryFilters(uniqueCategories);
+    buildPaidAreaFilters(uniquePaidAreas);
+    buildDataTypeFilters();
+    buildLegend(uniqueDistricts);
+  
+    drawBasemap();
+    drawLines();
+    drawParking();
+    updateResultCounter(); // initialize counter once
+    size(); // initialize layout
+  }).catch(err => {
+    console.error('Data load error:', err);
+    d3.select('body').append('div')
+      .style('position','fixed').style('inset','0').style('display','grid').style('place-items','center')
+      .style('background','#fff').style('color','#333')
+      .html('Failed to load GeoJSON. Open DevTools → Network for details.');
+  });
+  
+  // ------- Draw functions -------
+  function drawBasemap() {
+    gBase.selectAll('path')
+      .data(baseFeatures)
+      .join('path')
+        .attr('d', d => path(d))
+        .attr('fill', '#f0f2f5')
+        .attr('stroke', '#c9ced6')
+        .attr('stroke-width', 0.6);
+  }
+  
+  function drawLines() {
+    // Use current zoom level to keep stroke width consistent on filter redraws
+    const t = d3.zoomTransform(svg.node()) || d3.zoomIdentity;
+    const k = t.k || 1;
+    const strokeAtCurrentZoom = 3 / Math.sqrt(k);
+
+    // Draw the curb lines (only if showCurbSpaces is true)
+    const dataToShow = showCurbSpaces ? filtered : [];
+    const p = gLines.selectAll('path')
+      .data(dataToShow, d => d.id || d.properties?.OBJECTID || JSON.stringify(d.geometry));
+  
+    p.join(
+      enter => enter.append('path')
+        .attr('d', d => path(d))
+        .attr('fill', 'none')
+        .attr('stroke', d => {
+          const district = d.properties?.PRIMARYDISTRICTCD;
+          return district && district !== '' ? districtColors(district) : '#2f78ff';
+        })
+        .attr('stroke-width', strokeAtCurrentZoom)
+        .attr('stroke-dasharray', d => {
+          const props = d.properties || {};
+          const length = props.SPACELENGTH ? parseFloat(props.SPACELENGTH) : null;
+          const dashLength = length && !isNaN(length) && length > 0 
+            ? spaceLengthScale(length) 
+            : 20; // default dash length
+          return `${dashLength} 4`;
+        })
+        .attr('opacity', 0.85)
+        .attr('stroke-linejoin', 'round')
+        .attr('stroke-linecap', 'round')
+        .on('mouseover', function(event, d) {
+          const props = d.properties || {};
+          const categoryCode = props.CATEGORY || '';
+          const categoryInfo = categoryMapping[categoryCode] || { name: categoryCode };
+          const categoryName = categoryInfo.name || categoryCode;
+          
+          let tooltipText = `Paid Area: ${props.PAIDAREA ?? 'N/A'}\n`;
+          tooltipText += `Subarea: ${props.SUBAREA ?? 'N/A'}\n`;
+          tooltipText += `Category: ${categoryName}\n`;
+          tooltipText += `Space Type: ${props.SPACETYPEDESC ?? 'N/A'}\n`;
+          tooltipText += `Space Length: ${props.SPACELENGTH ?? 'N/A'}`;
+          if (props.TIME_LIMIT && props.TIME_LIMIT !== '') {
+            tooltipText += `\nTime Limit: ${props.TIME_LIMIT}`;
+          }
+          
+          tooltip
+            .style('display', 'block')
+            .html(tooltipText);
+        })
+        .on('mousemove', function(event) {
+          tooltip
+            .style('left', (event.pageX + 10) + 'px')
+            .style('top', (event.pageY - 10) + 'px');
+        })
+        .on('mouseout', function() {
+          tooltip.style('display', 'none');
+        }),
+      update => update
+        .attr('d', d => path(d))
+        .attr('stroke-width', strokeAtCurrentZoom)
+        .attr('stroke-dasharray', d => {
+          const props = d.properties || {};
+          const length = props.SPACELENGTH ? parseFloat(props.SPACELENGTH) : null;
+          const dashLength = length && !isNaN(length) && length > 0 
+            ? spaceLengthScale(length) 
+            : 20; // default dash length
+          return `${dashLength} 4`;
+        }),
+      exit => exit.remove()
+    );
+    
+    // Update result counter after drawing
+    updateResultCounter();
+  
+    // Draw street name labels
+    const labels = gLabels.selectAll('text')
+      .data(filtered, d => d.id || d.properties?.OBJECTID || JSON.stringify(d.geometry));
+  
+    labels.join(
+      enter => enter.append('text')
+        .attr('x', d => {
+          // Get centroid of the geometry for label placement
+          const centroid = path.centroid(d);
+          return centroid[0];
+        })
+        .attr('y', d => {
+          const centroid = path.centroid(d);
+          return centroid[1];
+        })
+        .attr('text-anchor', 'middle')
+        .attr('dy', '0.35em')
+        .attr('fill', '#333')
+        .attr('font-size', '12px')
+        .attr('font-weight', '500')
+        .attr('pointer-events', 'none')
+        .style('text-shadow', '0 1px 2px rgba(255,255,255,0.8), 0 1px 2px rgba(255,255,255,0.8)')
+        .text(d => {
+          const props = d.properties || {};
+          // Trying different possible street name properties
+          return props.STREETNAME || props.STREET || props.STREET_NAME || props.BLOCKID || props.SPACETYPEDESC || '';
+        })
+        .style('opacity', d => {
+          // Only show labels for features that have a meaningful street name
+          const props = d.properties || {};
+          const hasName = props.STREETNAME || props.STREET || props.STREET_NAME;
+          return hasName ? 0.9 : 0;
+        }),
+      update => update
+        .attr('x', d => path.centroid(d)[0])
+        .attr('y', d => path.centroid(d)[1]),
+      exit => exit.remove()
+    );
+  }
+  
+  function drawParking() {
+    // Use current zoom level to keep circle sizes consistent
+    const t = d3.zoomTransform(svg.node()) || d3.zoomIdentity;
+    const k = t.k || 1;
+    const baseRadius = 1.5; // Uniform radius for all parking circles (smaller to not overpower curb spaces)
+    
+    // Draw parking circles (only if showParking is true)
+    const dataToShow = showParking ? parkingFeatures : [];
+    const circles = gParking.selectAll('circle')
+      .data(dataToShow, d => d.id || d.properties?.OBJECTID || JSON.stringify(d.geometry));
+    
+    circles.join(
+      enter => enter.append('circle')
+        .attr('cx', d => {
+          const coords = d.geometry?.coordinates;
+          if (!coords || coords.length < 2) return 0;
+          const projected = projection([coords[0], coords[1]]);
+          return projected ? projected[0] : 0;
+        })
+        .attr('cy', d => {
+          const coords = d.geometry?.coordinates;
+          if (!coords || coords.length < 2) return 0;
+          const projected = projection([coords[0], coords[1]]);
+          return projected ? projected[1] : 0;
+        })
+        .attr('r', baseRadius / Math.sqrt(k))
+        .attr('fill', d => {
+          const district = d.properties?._DISTRICT;
+          return district && district !== '' ? districtColors(district) : '#808080'; // Gray for unknown districts
+        })
+        .attr('fill-opacity', 0.7)
+        .attr('stroke', d => {
+          const district = d.properties?._DISTRICT;
+          return district && district !== '' ? districtColors(district) : '#808080'; // Gray for unknown districts
+        })
+        .attr('stroke-width', 1.5)
+        .attr('stroke-opacity', 0.9)
+        .on('mouseover', function(event, d) {
+          const props = d.properties || {};
+          let tooltipText = `Garage: ${props.DEA_FACILITY_NAME || 'N/A'}\n`;
+          tooltipText += `Stalls: ${props.DEA_STALLS || 'N/A'}\n`;
+          tooltipText += `Address: ${props.DEA_FACILITY_ADDRESS || 'N/A'}`;
+          if (props._DISTRICT) {
+            tooltipText += `\nDistrict: ${props._DISTRICT}`;
+          }
+          if (props.DEA_BUSINESS_CONTACT) {
+            tooltipText += `\nContact: ${props.DEA_BUSINESS_CONTACT}`;
+          }
+          if (props.DEA_BUSINESS_PHONE) {
+            tooltipText += `\nPhone: ${props.DEA_BUSINESS_PHONE.trim()}`;
+          }
+          
+          tooltip
+            .style('display', 'block')
+            .html(tooltipText);
+        })
+        .on('mousemove', function(event) {
+          tooltip
+            .style('left', (event.pageX + 10) + 'px')
+            .style('top', (event.pageY - 10) + 'px');
+        })
+        .on('mouseout', function() {
+          tooltip.style('display', 'none');
+        }),
+      update => update
+        .attr('cx', d => {
+          const coords = d.geometry?.coordinates;
+          if (!coords || coords.length < 2) return 0;
+          const projected = projection([coords[0], coords[1]]);
+          return projected ? projected[0] : 0;
+        })
+        .attr('cy', d => {
+          const coords = d.geometry?.coordinates;
+          if (!coords || coords.length < 2) return 0;
+          const projected = projection([coords[0], coords[1]]);
+          return projected ? projected[1] : 0;
+        })
+        .attr('r', baseRadius / Math.sqrt(k))
+        .attr('fill', d => {
+          const district = d.properties?._DISTRICT;
+          return district && district !== '' ? districtColors(district) : '#808080'; // Gray for unknown districts
+        })
+        .attr('stroke', d => {
+          const district = d.properties?._DISTRICT;
+          return district && district !== '' ? districtColors(district) : '#808080'; // Gray for unknown districts
+        }),
+      exit => exit.remove()
+    );
+  }
+  
+  function redraw() {
+    // Recomputing paths after resize or parameter changes
+    gBase.selectAll('path').attr('d', d => path(d));
+    gLines.selectAll('path').attr('d', d => path(d));
+    // Update label positions
+    gLabels.selectAll('text')
+      .attr('x', d => path.centroid(d)[0])
+      .attr('y', d => path.centroid(d)[1]);
+    // Update parking circle positions
+    gParking.selectAll('circle')
+      .attr('cx', d => {
+        const coords = d.geometry?.coordinates;
+        if (!coords || coords.length < 2) return 0;
+        const projected = projection([coords[0], coords[1]]);
+        return projected ? projected[0] : 0;
+      })
+      .attr('cy', d => {
+        const coords = d.geometry?.coordinates;
+        if (!coords || coords.length < 2) return 0;
+        const projected = projection([coords[0], coords[1]]);
+        return projected ? projected[1] : 0;
+      });
+  }
+  
+  // ------- Build checkbox filters -------
+  function buildCategoryFilters(categories) {
+    const container = document.getElementById('category-filters');
+    container.innerHTML = '';
+    
+    categories.forEach(categoryCode => {
+      const category = categoryMapping[categoryCode] || { name: categoryCode, icon: '🚗' };
+      
+      const div = document.createElement('div');
+      div.className = 'checkbox-container';
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = `category-${categoryCode.replace(/[^a-zA-Z0-9]/g, '-')}`;
+      checkbox.checked = true;
+      checkbox.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          selectedCategories.add(categoryCode);
+        } else {
+          selectedCategories.delete(categoryCode);
+        }
+        applyFilters();
+      });
+      
+      const label = document.createElement('label');
+      label.htmlFor = checkbox.id;
+      
+      // Add icon
+      const icon = document.createElement('span');
+      icon.className = 'category-icon';
+      icon.textContent = category.icon;
+      
+      // Add full name text
+      const text = document.createElement('span');
+      text.textContent = category.name;
+      
+      label.appendChild(icon);
+      label.appendChild(text);
+      
+      div.appendChild(checkbox);
+      div.appendChild(label);
+      container.appendChild(div);
+    });
+  
+    // Select all functionality
+    document.getElementById('category-select-all').addEventListener('click', () => {
+      categories.forEach(cat => {
+        const checkbox = document.getElementById(`category-${cat.replace(/[^a-zA-Z0-9]/g, '-')}`);
+        if (checkbox) {
+          checkbox.checked = true;
+          selectedCategories.add(cat);
+        }
+      });
+      applyFilters();
+    });
+  
+    // Deselect all functionality
+    document.getElementById('category-deselect-all').addEventListener('click', () => {
+      categories.forEach(cat => {
+        const checkbox = document.getElementById(`category-${cat.replace(/[^a-zA-Z0-9]/g, '-')}`);
+        if (checkbox) {
+          checkbox.checked = false;
+          selectedCategories.delete(cat);
+        }
+      });
+      applyFilters();
+    });
+  }
+  
+  function buildPaidAreaFilters(paidAreas) {
+    const container = document.getElementById('paidarea-filters');
+    container.innerHTML = '';
+    
+    paidAreas.forEach(paidArea => {
+      const div = document.createElement('div');
+      div.className = 'checkbox-container';
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = `paidarea-${paidArea.replace(/[^a-zA-Z0-9]/g, '-')}`;
+      checkbox.checked = true;
+      checkbox.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          selectedPaidAreas.add(paidArea);
+        } else {
+          selectedPaidAreas.delete(paidArea);
+        }
+        applyFilters();
+      });
+      
+      const label = document.createElement('label');
+      label.htmlFor = checkbox.id;
+      label.textContent = paidArea;
+      
+      div.appendChild(checkbox);
+      div.appendChild(label);
+      container.appendChild(div);
+    });
+  
+    // Select all functionality
+    document.getElementById('paidarea-select-all').addEventListener('click', () => {
+      paidAreas.forEach(area => {
+        const checkbox = document.getElementById(`paidarea-${area.replace(/[^a-zA-Z0-9]/g, '-')}`);
+        if (checkbox) {
+          checkbox.checked = true;
+          selectedPaidAreas.add(area);
+        }
+      });
+      applyFilters();
+    });
+  
+    // Deselect all functionality
+    document.getElementById('paidarea-deselect-all').addEventListener('click', () => {
+      paidAreas.forEach(area => {
+        const checkbox = document.getElementById(`paidarea-${area.replace(/[^a-zA-Z0-9]/g, '-')}`);
+        if (checkbox) {
+          checkbox.checked = false;
+          selectedPaidAreas.delete(area);
+        }
+      });
+      applyFilters();
+    });
+  }
+  
+  // ------- Combined filter function -------
+  function applyFilters() {
+    // If either filter group is completely deselected, show nothing
+    if (selectedCategories.size === 0 || selectedPaidAreas.size === 0) {
+      filtered = [];
+      drawLines();
+      drawParking();
+      return;
+    }
+    
+    filtered = curbFeatures.filter(f => {
+      const props = f.properties || {};
+      
+      // Filter out features with N/A or empty PAIDAREA
+      const paidArea = props.PAIDAREA;
+      
+      // Check if PAIDAREA is invalid (null, empty, or N/A - case insensitive)
+      const paidAreaStr = paidArea ? String(paidArea).trim().toUpperCase() : '';
+      if (!paidArea || paidAreaStr === '' || paidAreaStr === 'N/A' || paidAreaStr === 'NA') {
+        return false;
+      }
+      
+      // CATEGORY checkbox filter
+      if (selectedCategories.size > 0) {
+        const category = props.CATEGORY;
+        if (!category || !selectedCategories.has(category)) {
+          return false;
+        }
+      }
+      
+      // PAIDAREA checkbox filter
+      if (selectedPaidAreas.size > 0) {
+        // Feature has a PAIDAREA value, check if it's in the selected set
+        if (!selectedPaidAreas.has(paidArea)) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+    
+    drawLines();
+    drawParking();
+  }
+  
+  // ------- Build data type filters -------
+  function buildDataTypeFilters() {
+    document.getElementById('show-curb-spaces').addEventListener('change', (e) => {
+      showCurbSpaces = e.target.checked;
+      drawLines();
+    });
+    
+    document.getElementById('show-parking').addEventListener('change', (e) => {
+      showParking = e.target.checked;
+      drawParking();
+    });
+  }
+  
+  // ------- Build legend -------
+  function buildLegend(districts) {
+    const container = document.getElementById('curb-legend-items');
+    container.innerHTML = '';
+    
+    // Add legend items for each district
+    districts.forEach(district => {
+      const item = document.createElement('div');
+      item.className = 'legend-item';
+      
+      const colorBox = document.createElement('div');
+      colorBox.className = 'legend-color';
+      colorBox.style.backgroundColor = districtColors(district);
+      
+        // Custom district name mapping
+        const districtNameMap = {
+          'DISTRICT1': 'Pioneer Square',
+          'DISTRICT2': '12th Avenue',
+          'DISTRICT3': 'Pike-Pine/12th Avenue/Capitol Hill',
+          'DISTRICT4': 'University District/Roosevelt',
+          'DISTRICT6': 'Ballard/Green Lake',
+          'DISTRICT7': 'Belltown/Uptown/Commercial Core',
+        };
+        const label = document.createElement('span');
+        label.className = 'legend-label';
+        label.textContent = districtNameMap[district] || district;
+        item.appendChild(colorBox);
+        item.appendChild(label);
+        container.appendChild(item);
+    });
+    
+    // Add "Others" for unknown districts
+    const othersItem = document.createElement('div');
+    othersItem.className = 'legend-item';
+    
+    const othersColorBox = document.createElement('div');
+    othersColorBox.className = 'legend-color';
+    othersColorBox.style.backgroundColor = '#808080'; // Gray for unknown
+    
+    const othersLabel = document.createElement('span');
+    othersLabel.className = 'legend-label';
+    othersLabel.textContent = 'Others';
+    
+    othersItem.appendChild(othersColorBox);
+    othersItem.appendChild(othersLabel);
+    container.appendChild(othersItem);
+  }
+  </script>
+  
+</body>
 </html>
