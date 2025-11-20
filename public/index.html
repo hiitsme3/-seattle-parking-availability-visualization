@@ -248,6 +248,9 @@
       border-radius: 50%;
       margin-right: 6px;
       vertical-align: middle;
+      flex-shrink: 0;
+      line-height: 1;
+      box-sizing: border-box;
     }
     .legend-circle.grey {
       background-color: #777;
@@ -360,11 +363,10 @@
     .zoom-btn:hover { background:#f5f5f5; box-shadow:0 2px 6px rgba(0,0,0,0.15) }
     .zoom-btn:active { background:#e0e0e0 }
     
-    /* ------- Result Counter ------- */
+    /* ------- Fit to Results Button ------- */
     #curb-result-info { position:absolute; top:20px; right:20px; background:#fff; padding:8px 12px; 
       border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,.12); z-index:10000; pointer-events:auto;
       font-size:12px; color:#333 }
-    #curb-result-count { font-weight:600 }
     #curb-fit-to-results:focus { outline:none }
     #curb-fit-to-results:hover { background:#357abd }
     #curb-fit-to-results:active { background:#2a5f8f }
@@ -389,49 +391,50 @@
   </header>
 
   <main>
-    <section id="curb-explorer">
-    <section>
-    <h1>Exploring Seattle's Curb Space System</h1>
+    <section id="curb-explorer" class="intro">
+      <section>
+      <h1>Exploring Seattle's Curb Space System</h1>
 
-      <p>
-        Seattle contains thousands of curb spaces and dozens of public garages, yet drivers often experience the system as chaotic and inconsistent. 
-        What looks abundant in the data can feel scarce behind the wheel. Much like the MBTA visualization revealed how subway behavior emerges from 
-        underlying structure, Seattle’s parking behavior is shaped by the spatial arrangement of curb rules and garage locations.
-        This visualization places both parking worlds—the curb and the garage—onto a single map to uncover patterns that are hard to see at street level.
-      </p>
+        <p>
+          Seattle contains thousands of curb spaces and dozens of public garages, yet drivers often experience the system as chaotic and inconsistent. 
+          What looks abundant in the data can feel scarce behind the wheel. Much like the MBTA visualization revealed how subway behavior emerges from 
+          underlying structure, Seattle’s parking behavior is shaped by the spatial arrangement of curb rules and garage locations.
+          This visualization places both parking worlds—the curb and the garage—onto a single map to uncover patterns that are hard to see at street level.
+        </p>
 
-      <h2>Curb Spaces Across Seattle</h2>
+        <h2>Curb Spaces Across Seattle</h2>
 
-      <p>
-        Curb spaces are the first places drivers look, lining nearly every major neighborhood. But they are also the most fragmented part of the system: 
-        regulations change block by block, shifting between paid zones, time limits, loading areas, bus lanes, and other restrictions.
-      </p>
+        <p>
+          Curb spaces are the first places drivers look, lining nearly every major neighborhood. But they are also the most fragmented part of the system: 
+          regulations change block by block, shifting between paid zones, time limits, loading areas, bus lanes, and other restrictions.
+        </p>
 
-      <p>
-        By coloring each curb space by district, the map makes these inconsistencies visible. Some neighborhoods have dense, orderly grids of paid parking, 
-        while others are dominated by long stretches of restricted or unavailable curb zones. What often feels like “no parking anywhere” is usually the 
-        result of this regulatory patchwork.
-      </p>
+        <p>
+          By coloring each curb space by district, the map makes these inconsistencies visible. Some neighborhoods have dense, orderly grids of paid parking, 
+          while others are dominated by long stretches of restricted or unavailable curb zones. What often feels like “no parking anywhere” is usually the 
+          result of this regulatory patchwork.
+        </p>
 
-      <h2>Public Garages and Lots</h2>
+        <h2>Public Garages and Lots</h2>
 
-      <p>
-        Garages form the opposite landscape—large, concentrated, and often hidden from a driver’s natural search pattern. A person circling for curb 
-        parking may pass several garages without noticing them, even when they are only a block away.
-      </p>
+        <p>
+          Garages form the opposite landscape—large, concentrated, and often hidden from a driver’s natural search pattern. A person circling for curb 
+          parking may pass several garages without noticing them, even when they are only a block away.
+        </p>
 
-      <p>
-        Plotted alongside the curb spaces, garages reveal a contrasting structure: downtown districts contain tight clusters of garage capacity, while 
-        other neighborhoods rely almost entirely on the curb. The map shows that a street with no usable curb spaces may still sit next to ample garage 
-        availability—yet drivers rarely treat the two as interchangeable.
-      </p>
+        <p>
+          Plotted alongside the curb spaces, garages reveal a contrasting structure: downtown districts contain tight clusters of garage capacity, while 
+          other neighborhoods rely almost entirely on the curb. The map shows that a street with no usable curb spaces may still sit next to ample garage 
+          availability—yet drivers rarely treat the two as interchangeable.
+        </p>
 
-      <p>
-        <strong>
-          Before zooming into a single driver's experience, this section lets you explore how different curb categories and paid parking areas are distributed 
-          across Seattle, using the city's open curb-space and garage data.
-        </strong>
-      </p>
+        <p>
+          <strong>
+            Before zooming into a single driver's experience, this section lets you explore how different curb categories and paid parking areas are distributed 
+            across Seattle, using the city's open curb-space and garage data.
+          </strong>
+        </p>
+      </section>
     </section>
 
 
@@ -481,10 +484,9 @@
     <div class="zoom-btn" id="curb-zoom-out">−</div>
   </div>
   
-  <!--------- Result Counter --------->
+  <!--------- Fit to Results Button --------->
   <div id="curb-result-info">
-    <div id="curb-result-count">0 results</div>
-    <button id="curb-fit-to-results" disabled style="background:#4a90e2; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:500; width:100%; margin-top:6px">Fit to Results</button>
+    <button id="curb-fit-to-results" disabled style="background:#4a90e2; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:500; width:100%">Fit to Results</button>
   </div>
   
   <!--------- Legend --------->
@@ -516,49 +518,101 @@
 </section>
 
 
+<section id="district-summary" class="intro">
+  <section>
+    <h1>Seattle’s Parking Network</h1>
+  
+    <p>
+      Seattle’s curbside parking system includes thousands of paid curb spaces and a wide range of public garages and lots.
+      Although these resources are abundant, drivers often experience parking as inconsistent or difficult to find. To
+      understand why, this visualization brings together Seattle’s official curb-space and garage datasets into a unified,
+      interactive map.
+    </p>
+  
+    <h2>The Curb and Garage Layers</h2>
+    <p>
+      Curb segments form the backbone of the system. Each line represents a block face with its own rules—paid areas,
+      categories, time limits, and space lengths. Public garages, on the other hand, are fixed points without neighborhood
+      labels. To compare them meaningfully, each garage is assigned to the nearest paid-parking area or placed in an
+      “Others” category if it lies outside any zone.
+    </p>
+  
+    <h2>Parking Supply by Paid Area</h2>
+    <p>
+      The bar chart above summarizes how curb segments and garages are distributed across Seattle’s paid areas. Grey bars
+      represent curb spaces; blue bars represent garages. Users can toggle each category on or off, and brushing across
+      the bars updates totals based only on the visible parking types. This makes it easy to explore questions such as
+      which areas rely heavily on curb supply versus those supported more by structured parking.
+    </p>
+  
+    <p>
+      By presenting both layers together, the visualization highlights how the organization of Seattle’s parking
+      network—not just the total amount—shapes the everyday experience of finding a place to park.
+    </p>
+  </section>  
 
-<!-------------------------------------------- JavaScript: D3 Setup, Data Fetching & Interactivity --------------------------------------------------->
+  <div id="bar-toggle">
+    <label>
+      <input type="checkbox" id="toggle-curb" checked>
+      Show curb spaces
+    </label>
+    <label style="margin-left: 1rem;">
+      <input type="checkbox" id="toggle-garage" checked>
+      Show parking garages
+    </label>
+    <button id="reset-brush-btn" style="margin-left: 1rem; padding: 6px 12px; border-radius: 4px; border: none; background: #333; color: white; cursor: pointer; font-size: 13px;">Reset Brush</button>
+  </div>
 
-    </section>
+  <svg id="district-bar-chart" width="900" height="320"></svg>
+
+  <p id="brush-summary">
+    Drag across the bars to select a set of paid areas.
+  </p>
+</section>
 
 
-    <section>
-      <h1>The Parking Hunt</h1>
-    
-      <p>
-        Finding parking in downtown Seattle—especially near Pike Place Market—often feels unpredictable. Unlike transit systems with fixed routes, drivers navigate a constantly changing environment shaped by curb regulations, demand, and street layout. What seems straightforward on a map becomes a sequence of small decisions and reversals once the search begins.
-      </p>
-    
-      <p>
-        Much like the MBTA visualization reveals the daily rhythms of train movement, this animation illustrates the lived experience of parking: not delay, but uncertainty.
-      </p>
-    
-      <h2>What the Animation Shows</h2>
-    
-      <p>
-        The simulation begins with a driver just outside Pike Place Market. Their task is simple: find the nearest available parking space. The car moves realistically across the grid, checking curb spaces and garages one by one. Many look promising but turn out to be full. Others require awkward L-shaped routes because of one-way streets or block geometry.
-      </p>
-    
-      <p>
-        Each movement updates the “state” of the search, showing how quickly nearby options disappear and how the search radius expands with every failed attempt.
-      </p>
-    
-      <h2>A Typical Parking Search</h2>
-    
-      <p>
-        The visualization highlights what most Seattle drivers already know: the closest spot is rarely the easiest to reach. Several attempts may fail before one succeeds, and a single unavailable space can shift the entire route. This mirrors the MBTA’s observation that even small disruptions can ripple across a system, reshaping behavior far beyond the initial obstacle.
-      </p>
-    
-      <h2>Seeing the Experience From Above</h2>
-    
-      <p>
-        By watching the car wander block by block, viewers can see the structure behind the frustration. Clusters of full spots push the driver outward; isolated available spaces require long detours; garages and curb spaces influence the search differently. From above, the pattern becomes clear: parking difficulty is not random—it is built into the geometry and distribution of the system.
-      </p>
-    
-      <h2>Interactive Experience: Hunting for Parking in Downtown Seattle</h2>
-    
-        This explorable explanation shows what it feels like to search for parking near a popular destination in downtown Seattle. The map encodes a small subset of on-street paid curb spaces (grey dots) and public garages (blue dots), based on Seattle’s open parking data. Press “Start Animation” to follow one driver as they always select the nearest parking option. Most options turn out to be full or unusable, and the driver continues outward until finally reaching a spot that is actually available.
-      </p>
+
+<!-------- JavaScript: D3 Setup, Data Fetching & Interactivity ---------->
+
+    <section id="parking-hunt">
+      <section>
+        <h1>The Parking Hunt</h1>
+      
+        <p>
+          Finding parking in downtown Seattle—especially near Pike Place Market—often feels unpredictable. Unlike transit systems with fixed routes, drivers navigate a constantly changing environment shaped by curb regulations, demand, and street layout. What seems straightforward on a map becomes a sequence of small decisions and reversals once the search begins.
+        </p>
+      
+        <p>
+          Much like the MBTA visualization reveals the daily rhythms of train movement, this animation illustrates the lived experience of parking: not delay, but uncertainty.
+        </p>
+      
+        <h2>What the Animation Shows</h2>
+      
+        <p>
+          The simulation begins with a driver just outside Pike Place Market. Their task is simple: find the nearest available parking space. The car moves realistically across the grid, checking curb spaces and garages one by one. Many look promising but turn out to be full. Others require awkward L-shaped routes because of one-way streets or block geometry.
+        </p>
+      
+        <p>
+          Each movement updates the “state” of the search, showing how quickly nearby options disappear and how the search radius expands with every failed attempt.
+        </p>
+      
+        <h2>A Typical Parking Search</h2>
+      
+        <p>
+          The visualization highlights what most Seattle drivers already know: the closest spot is rarely the easiest to reach. Several attempts may fail before one succeeds, and a single unavailable space can shift the entire route. This mirrors the MBTA’s observation that even small disruptions can ripple across a system, reshaping behavior far beyond the initial obstacle.
+        </p>
+      
+        <h2>Seeing the Experience From Above</h2>
+      
+        <p>
+          By watching the car wander block by block, viewers can see the structure behind the frustration. Clusters of full spots push the driver outward; isolated available spaces require long detours; garages and curb spaces influence the search differently. From above, the pattern becomes clear: parking difficulty is not random—it is built into the geometry and distribution of the system.
+        </p>
+      
+        <h2>Interactive Experience: Hunting for Parking in Downtown Seattle</h2>
+      
+          This explorable explanation shows what it feels like to search for parking near a popular destination in downtown Seattle. The map encodes a small subset of on-street paid curb spaces (grey dots) and public garages (blue dots), based on Seattle’s open parking data. Press “Start Animation” to follow one driver as they always select the nearest parking option. Most options turn out to be full or unusable, and the driver continues outward until finally reaching a spot that is actually available.
+        </p>
+      </section>
     </section>
 
     <section class="layout">
@@ -601,9 +655,10 @@
 
           <div id="status">Click "Start Animation" to begin.</div>
 
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
             <button id="start-btn">Start Animation</button>
             <button id="stop-btn" disabled>Stop Animation</button>
+            <button id="resume-btn" disabled>Resume Animation</button>
           </div>
         </aside>
 
@@ -615,7 +670,7 @@
       </div>
     </section>
 
-    <section class="intro">
+    <section>
       <h2>Why This Matters</h2>
 
       <p>
@@ -813,6 +868,7 @@
     const statusDiv = document.getElementById("status");
     const startBtn = document.getElementById("start-btn");
     const stopBtn = document.getElementById("stop-btn");
+    const resumeBtn = document.getElementById("resume-btn");
 
     function setStatus(text, ok = false) {
       statusDiv.textContent = text;
@@ -934,6 +990,12 @@
       }
       startBtn.disabled = false;
       stopBtn.disabled = true;
+      // Only enable resume if animation was in progress (not at the start or end)
+      if (animIndex > 0 && animIndex < animationPoints.length - 1) {
+        resumeBtn.disabled = false;
+      } else {
+        resumeBtn.disabled = true;
+      }
       setStatus("Animation stopped.", false);
     }
 
@@ -954,15 +1016,15 @@
       setStatus("Click \"Start Animation\" to begin.", false);
       startBtn.disabled = false;
       stopBtn.disabled = true;
+      resumeBtn.disabled = true;
     }
 
-    function startAnimation() {
-      resetAnimation();
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
-      setStatus("Starting near your destination…");
-
-      let prevPos = animationPoints[0];
+    function runAnimation() {
+      // Get the previous position for distance calculation
+      // When resuming, use current position; when starting fresh, use first point
+      let prevPos = animIndex >= 0 && animIndex < animationPoints.length 
+        ? animationPoints[animIndex] 
+        : animationPoints[0];
       let currentAttempts = 0;
 
       animTimer = setInterval(() => {
@@ -975,6 +1037,7 @@
           );
           startBtn.disabled = false;
           stopBtn.disabled = true;
+          resumeBtn.disabled = true;
           return;
         }
 
@@ -1030,8 +1093,30 @@
       }, 120); // smooth, blocky motion
     }
 
+    function startAnimation() {
+      resetAnimation();
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      resumeBtn.disabled = true;
+      setStatus("Starting near your destination…");
+      runAnimation();
+    }
+
+    function resumeAnimation() {
+      if (animIndex >= animationPoints.length - 1) {
+        resumeBtn.disabled = true;
+        return;
+      }
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      resumeBtn.disabled = true;
+      setStatus("Resuming animation…");
+      runAnimation();
+    }
+
     startBtn.addEventListener("click", startAnimation);
     stopBtn.addEventListener("click", stopAnimation);
+    resumeBtn.addEventListener("click", resumeAnimation);
     resetAnimation();
   </script>
 
@@ -1175,14 +1260,9 @@
       );
   }
   
-  // ------- Update Result Counter -------
+  // ------- Update Fit to Results Button State -------
   function updateResultCounter() {
-    const countEl = document.getElementById('curb-result-count');
     const fitBtn = document.getElementById('curb-fit-to-results');
-    
-    if (countEl) {
-      countEl.textContent = `${filtered.length} result${filtered.length !== 1 ? 's' : ''}`;
-    }
     
     if (fitBtn) {
       fitBtn.disabled = filtered.length === 0;
@@ -1294,6 +1374,63 @@
     nearbyCurbs.sort((a, b) => a.distance - b.distance);
     return nearbyCurbs[0].district;
   }
+
+  // ------- Map parking points to a PAIDAREA based on nearby curb spaces -------
+  function getPaidAreaForParking(parkingCoords, curbFeatures, searchRadiusKm = 0.3) {
+    const nearbyCurbs = [];
+
+    curbFeatures.forEach(curb => {
+      const paidArea = curb.properties?.PAIDAREA;
+      if (!paidArea) return;
+
+      let minDistance = Infinity;
+      let closestPoint = null;
+
+      if (curb.geometry?.type === "LineString" && curb.geometry.coordinates) {
+        const coords = curb.geometry.coordinates;
+        const checkPoints = [];
+
+        if (coords.length > 0) {
+          checkPoints.push(coords[0]);                        // start
+          if (coords.length > 1) checkPoints.push(coords[coords.length - 1]); // end
+          const midIndex = Math.floor(coords.length / 2);
+          checkPoints.push(coords[midIndex]);                 // middle
+          if (coords.length > 3) {
+            const q1Index = Math.floor(coords.length / 4);
+            const q3Index = Math.floor(coords.length * 3 / 4);
+            checkPoints.push(coords[q1Index], coords[q3Index]);
+          }
+        }
+
+        checkPoints.forEach(pt => {
+          const dist = geoDistance(parkingCoords, pt);
+          if (dist < minDistance) {
+            minDistance = dist;
+            closestPoint = pt;
+          }
+        });
+      } else if (curb.geometry?.type === "MultiLineString" && curb.geometry.coordinates) {
+        curb.geometry.coordinates.forEach(line => {
+          if (!line || line.length === 0) return;
+          const dist = geoDistance(parkingCoords, line[0]);
+          if (dist < minDistance) {
+            minDistance = dist;
+            closestPoint = line[0];
+          }
+        });
+      }
+
+      if (closestPoint && minDistance <= searchRadiusKm) {
+        nearbyCurbs.push({ paidArea, distance: minDistance });
+      }
+    });
+
+    if (nearbyCurbs.length === 0) return null;
+
+    nearbyCurbs.sort((a, b) => a.distance - b.distance);
+    return nearbyCurbs[0].paidArea;
+  }
+
   
   // ------- Color scale for districts -------
   // Use a high-contrast color palette for distinct district colors (no red colors)
@@ -1356,13 +1493,17 @@
     parkingFeatures.forEach(parking => {
       const coords = parking.geometry?.coordinates;
       if (coords && coords.length >= 2) {
-        const district = getDistrictForParking([coords[0], coords[1]], curbFeatures);
-        // Store district in properties for later use
+        const parkingCoord = [coords[0], coords[1]];
+
+        const district = getDistrictForParking(parkingCoord, curbFeatures);
+        const paidArea = getPaidAreaForParking(parkingCoord, curbFeatures);
+
         if (!parking.properties) parking.properties = {};
         parking.properties._DISTRICT = district;
+        // store a derived paid area so we can aggregate garages by paid area later
+        parking.properties._PAIDAREA = paidArea || "Others";
       }
     });
-  
     // Populate color scale domain with unique district codes
     const uniqueDistricts = [...new Set(curbFeatures
       .map(f => f.properties?.PRIMARYDISTRICTCD)
@@ -1411,6 +1552,8 @@
     drawParking();
     updateResultCounter(); // initialize counter once
     size(); // initialize layout
+    // Build the static summary visualization
+    buildDistrictBarChart();
   }).catch(err => {
     console.error('Data load error:', err);
     d3.select('body').append('div')
@@ -1418,6 +1561,293 @@
       .style('background','#fff').style('color','#333')
       .html('Failed to load GeoJSON. Open DevTools → Network for details.');
   });
+
+  // ------- Summary chart: curb vs garages by paid area with brush + toggles -------
+  function buildDistrictBarChart() {
+    const svgNode = d3.select("#district-bar-chart");
+    if (svgNode.empty()) return;
+
+    // Clear any previous content so redraws don't stack
+    svgNode.selectAll("*").remove();
+
+    const svgEl = svgNode.node();
+    const width = svgEl.clientWidth || +svgNode.attr("width") || 900;
+    const height = svgEl.clientHeight || +svgNode.attr("height") || 320;
+
+    const margin = { top: 30, right: 20, bottom: 90, left: 70 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+
+    const g = svgNode
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // --- Aggregate counts per PAID AREA ---
+    function getAreaFromProps(props) {
+      if (!props) return "Others";
+
+      // curb: PAIDAREA / PAID_AREA; garages: _PAIDAREA we computed earlier
+      const raw =
+        props.PAIDAREA ||
+        props._PAIDAREA ||
+        props.PAID_AREA ||
+        null;
+
+      if (!raw) return "Others";
+
+      const str = String(raw).trim();
+      if (!str || str.toUpperCase() === "N/A" || str.toUpperCase() === "NA") {
+        return "Others";
+      }
+      return str;
+    }
+
+    const curbByArea = d3.rollup(
+      curbFeatures,
+      v => v.length,
+      d => getAreaFromProps(d.properties)
+    );
+
+    const garageByArea = d3.rollup(
+      parkingFeatures,
+      v => v.length,
+      d => getAreaFromProps(d.properties)
+    );
+
+    let rows = Array.from(
+      new Set([
+        ...curbByArea.keys(),
+        ...garageByArea.keys()
+      ])
+    ).map(a => ({
+      area: a,
+      curb: curbByArea.get(a) || 0,
+      garage: garageByArea.get(a) || 0
+    }));
+
+    // drop empty labels
+    rows = rows.filter(d => d.area && d.area !== "");
+
+    if (rows.length === 0) return;
+
+    // keep top 10 + always keep "Others" if present
+    const othersRow = rows.find(r => r.area === "Others");
+    let mainRows = rows.filter(r => r.area !== "Others");
+    mainRows.sort((a, b) => (b.curb + b.garage) - (a.curb + a.garage));
+    mainRows = mainRows.slice(0, 10);
+    rows = othersRow ? [...mainRows, othersRow] : mainRows;
+
+    const series = ["curb", "garage"];
+
+    // --- Scales ---
+    const x0 = d3.scaleBand()
+      .domain(rows.map(d => d.area))
+      .range([0, innerWidth])
+      .padding(0.2);
+
+    const x1 = d3.scaleBand()
+      .domain(series)
+      .range([0, x0.bandwidth()])
+      .padding(0.1);
+
+    const y = d3.scaleLinear()
+      .domain([
+        0,
+        d3.max(rows, d => Math.max(d.curb, d.garage)) || 1
+      ])
+      .nice()
+      .range([innerHeight, 0]);
+
+    const color = d3.scaleOrdinal()
+      .domain(series)
+      .range(["#777777", "#005eb8"]); // grey = curb, blue = garages
+
+    // --- Axes ---
+    g.append("g")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(x0))
+      .selectAll("text")
+      .attr("transform", "rotate(-40)")
+      .style("text-anchor", "end");
+
+    g.append("g")
+      .call(d3.axisLeft(y));
+
+    g.append("text")
+      .attr("x", -innerHeight / 2)
+      .attr("y", -50)
+      .attr("transform", "rotate(-90)")
+      .attr("text-anchor", "middle")
+      .attr("fill", "#333")
+      .style("font-size", "12px")
+      .text("Count of parking locations");
+
+    // --- Tooltip (reuse single div) ---
+    const tooltip = d3.select("body")
+      .selectAll(".bar-tooltip")
+      .data([null])
+      .join("div")
+        .attr("class", "bar-tooltip")
+        .style("position", "fixed")
+        .style("padding", "6px 8px")
+        .style("font-size", "12px")
+        .style("background", "rgba(0,0,0,0.85)")
+        .style("color", "#fff")
+        .style("border-radius", "4px")
+        .style("pointer-events", "none")
+        .style("display", "none");
+
+    function showTooltip(event, row, key) {
+      tooltip
+        .style("display", "block")
+        .style("left", `${event.clientX + 10}px`)
+        .style("top", `${event.clientY + 10}px`)
+        .html(
+          `<strong>Paid Area ${row.area}</strong><br>` +
+          (key === "curb"
+            ? `Curb segments: ${row.curb}`
+            : `Garages/lots: ${row.garage}`)
+        );
+    }
+
+    function hideTooltip() {
+      tooltip.style("display", "none");
+    }
+
+    // --- Bars ---
+    const groups = g.selectAll(".area-group")
+      .data(rows)
+      .join("g")
+        .attr("class", "area-group")
+        .attr("transform", d => `translate(${x0(d.area)},0)`);
+
+    groups.selectAll("rect")
+      .data(d => series.map(key => ({ key, value: d[key], row: d })))
+      .join("rect")
+        .attr("class", d => `bar bar-${d.key}`)  // bar-curb / bar-garage
+        .attr("x", d => x1(d.key))
+        .attr("y", d => y(d.value))
+        .attr("width", x1.bandwidth())
+        .attr("height", d => innerHeight - y(d.value))
+        .attr("fill", d => color(d.key))
+        .on("mousemove", (event, d) => showTooltip(event, d.row, d.key))
+        .on("mouseleave", hideTooltip);
+
+    // --- Brush for selecting areas ---
+    const brush = d3.brushX()
+      .extent([[0, 0], [innerWidth, innerHeight]])
+      .on("brush end", brushed);
+
+    const brushGroup = g.append("g")
+      .attr("class", "area-brush")
+      .call(brush);
+
+    const summaryP = d3.select("#brush-summary");
+
+    // --- Reset brush button ---
+    const resetBtn = d3.select("#reset-brush-btn");
+    if (!resetBtn.empty()) {
+      resetBtn.on("click", function() {
+        // Clear the brush selection
+        brushGroup.call(brush.move, null);
+        // Manually trigger the brushed function to update the UI
+        brushed({ selection: null });
+      });
+    }
+
+    function brushed(event) {
+      const sel = event.selection;
+
+      // Read current toggle state
+      const showCurb = curbCheckbox.empty() ? true : curbCheckbox.property("checked");
+      const showGarage = garageCheckbox.empty() ? true : garageCheckbox.property("checked");
+
+      if (!sel) {
+        groups.classed("selected", false);
+
+        if (!showCurb && !showGarage) {
+          summaryP.text("Curb spaces and garages are hidden. Use the checkboxes above to show a category.");
+        } else {
+          summaryP.text("Drag across the bars to select a set of paid areas.");
+        }
+        return;
+      }
+
+      const [x0Sel, x1Sel] = sel;
+      const selected = [];
+
+      groups.each(function(d) {
+        const cx = x0(d.area) + x0.bandwidth() / 2;
+        const isInBrush = cx >= x0Sel && cx <= x1Sel;
+        d3.select(this).classed("selected", isInBrush);
+        if (isInBrush) selected.push(d);
+      });
+
+      if (selected.length === 0) {
+        if (!showCurb && !showGarage) {
+          summaryP.text("Curb spaces and garages are hidden. Use the checkboxes above to show a category.");
+        } else {
+          summaryP.text("No paid areas selected. Drag across the bars to brush a subset.");
+        }
+        return;
+      }
+
+      const names = selected.map(d => d.area).join(", ");
+
+      // Build the text based on which categories are visible
+      const parts = [`Selected paid areas: ${names}.`];
+
+      if (showCurb) {
+        const totalCurb = d3.sum(selected, d => d.curb);
+        parts.push(`Total curb segments: ${totalCurb}.`);
+      }
+
+      if (showGarage) {
+        const totalGarage = d3.sum(selected, d => d.garage);
+        parts.push(`Total garages/lots: ${totalGarage}.`);
+      }
+
+      // If both are hidden (edge case), give a helpful message
+      if (!showCurb && !showGarage) {
+        summaryP.text("Curb spaces and garages are hidden. Use the checkboxes above to show a category.");
+      } else {
+        summaryP.text(parts.join(" "));
+      }
+    }
+
+
+    // --- External toggles (not legend) ---
+    const curbCheckbox = d3.select("#toggle-curb");
+    const garageCheckbox = d3.select("#toggle-garage");
+
+    function updateVisibility() {
+      const showCurb = curbCheckbox.empty() ? true : curbCheckbox.property("checked");
+      const showGarage = garageCheckbox.empty() ? true : garageCheckbox.property("checked");
+
+      g.selectAll(".bar-curb")
+        .transition()
+        .duration(200)
+        .style("opacity", showCurb ? 1 : 0);
+
+      g.selectAll(".bar-garage")
+        .transition()
+        .duration(200)
+        .style("opacity", showGarage ? 1 : 0);
+    }
+
+    if (!curbCheckbox.empty()) {
+      curbCheckbox.on("change", updateVisibility);
+    }
+    if (!garageCheckbox.empty()) {
+      garageCheckbox.on("change", updateVisibility);
+    }
+
+    // initial state
+    updateVisibility();
+  }
+
+
   
   // ------- Draw functions -------
   function drawBasemap() {
