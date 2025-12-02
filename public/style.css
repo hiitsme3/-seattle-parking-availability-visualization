@@ -1,30 +1,768 @@
-/* .viz-placeholder {
-  height: 200px;
-  background-color: #f0f0f0;
-  border: 2px dashed #ccc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #777;
-  font-weight: 500;
-}
-
-h1 {
-  font-family: "DM Serif Display", serif;
-  font-size: 3.5rem;
-  letter-spacing: 0.5px;
+* {
+  box-sizing: border-box;
 }
 
 body {
-  font-family: "Source Sans 3", sans-serif;
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  color: #222;
+  background-color: #ffffff;
 }
 
-.viz-wrap {
-  position: relative;
+/* Hero / top intro */
+.hero {
+  background: #f5f5f7;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.hero-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 80px 24px 72px;
+  text-align: left;
+}
+
+.hero h1 {
+  font-size: 2.8rem;
+  margin: 0 0 12px;
+  letter-spacing: 0.02em;
+}
+
+.hero p {
+  margin: 4px 0;
+  font-size: 1.05rem;
+}
+
+.hero-sub {
+  margin-top: 16px;
+  color: #555;
+}
+
+/* Main scrollytelling layout */
+#scrolly {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+/* Left: sticky map container */
+#map-container {
+  position: sticky;
+  top: 0;
+  width: 50%;
+  height: 100vh;
+  border-right: 1px solid #e0e0e0;
+  background: #ffffff;
+  /* Ensure we can stack views inside */
+  overflow: hidden; 
+}
+
+/* Wrapper for the Standard Map View */
+#map-view {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: opacity 0.3s ease;
+}
+
+/* Wrapper for the Animation View */
+#animation-view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #f3f4f6;
+  padding: 40px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+  z-index: 1000; /* Sit on top of map when visible */
+}
+
+/* Utility to hide views */
+.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  /* We use opacity/visibility so transitions work, but ensure pointer events are gone */
+}
+
+#map {
+  width: 100%;
+  flex: 1 1 auto;
+}
+
+/* Map legend and caption */
+#map-legend {
+  padding: 10px 16px 4px;
+  border-top: 1px solid #e0e0e0;
+  background: #fafafa;
+}
+
+#map-legend h3 {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #555;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+  border-radius: 3px;
+}
+
+.legend-swatch.curb {
+  background: rgba(36, 104, 232, 0.6);
+  border: 1px solid #2468e8;
+}
+
+.legend-swatch.garage {
+  background: rgba(147, 51, 234, 0.85);
+  border: 1px solid #6D28D9;;
+}
+
+/* Category Legend Swatches (Step 10) */
+.legend-swatch.cat-paid { background: #2468e8; border: 1px solid #1a4db0; }
+.legend-swatch.cat-nopark { background: #cc0000; border: 1px solid #990000; }
+.legend-swatch.cat-load { background: #ff9900; border: 1px solid #cc7a00; }
+.legend-swatch.cat-other { background: #757575; border: 1px solid #555555; }
+
+
+#map-caption {
+  padding: 6px 16px 10px;
+  font-size: 0.9rem;
+  color: #555;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* Hover info panel */
+#hover-info {
+  padding: 8px 16px 10px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fdfdfd;
+  font-size: 0.9rem;
+}
+
+#hover-info h3 {
+  margin: 0 0 4px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #555;
+}
+
+#hover-info-body {
+  color: #333;
+}
+
+/* Mini chart */
+#mini-chart {
+  padding: 8px 16px 12px;
+  background: #fafafa;
+  border-top: 1px solid #e0e0e0;
+}
+
+#mini-chart h3 {
+  margin: 0 0 4px;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #555;
+}
+
+/* Right: story text */
+#story {
+  width: 50%;
+  padding: 40px 28px 80px;
+}
+
+.step {
+  max-width: 100%; /* Allow wider charts in steps */
+  margin: 0 auto 200px;
+  padding: 18px 22px;
+  border-left: 4px solid #ddd;
+  background: #fcfcfc;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.02);
+  transition: border-color 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
+}
+
+.step h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+}
+
+.step p {
+  margin: 6px 0;
+}
+
+.step ul {
+  margin-top: 6px;
+  padding-left: 18px;
+}
+
+/* Highlight the active step */
+.step.is-active {
+  border-color: #2468e8;
+  background-color: #f5f7ff;
+  transform: translateX(4px);
+}
+
+/* Make vector shapes fade nicely */
+.leaflet-interactive {
+  transition: opacity 0.4s ease, fill-opacity 0.4s ease, stroke-width 0.2s ease;
+}
+
+.footer {
+  padding: 24px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #666;
+  border-top: 1px solid #e0e0e0;
   background: #fff;
-  border: 1px dashed #c9c9c9;
-  border-radius: 6px;
-  overflow: scroll;
-} */
+}
+
+/* Responsive tweaks */
+@media (max-width: 900px) {
+  #scrolly {
+    flex-direction: column;
+  }
+
+  #map-container {
+    position: relative;
+    width: 100%;
+    height: 60vh;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+    overflow: visible; 
+  }
+
+  /* When on mobile, allow animation view to sit normally */
+  #animation-view {
+    position: absolute;
+    top: 0; 
+    left: 0;
+    z-index: 2000;
+  }
+
+  #story {
+    width: 100%;
+    padding: 24px 16px 60px;
+  }
+
+  .step {
+    margin-bottom: 120px;
+  }
+}
+
+/* Toggle button under section 3 */
+.toggle-row {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.toggle-button {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #cccccc;
+  background-color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.toggle-button:hover {
+  background-color: #f2f2f2;
+}
+
+.toggle-button[aria-pressed="true"], .toggle-button.active {
+  background-color: #222222;
+  color: #ffffff;
+  border-color: #222222;
+}
+
+.toggle-hint {
+  font-size: 12px;
+  color: #666666;
+}
+
+/* Personality chart section */
+#personality-chart {
+  width: 100%; /* Force full width */
+  height: auto;
+  display: block;
+  margin-top: 12px;
+}
+
+.personality-caption {
+  font-size: 0.85rem;
+  color: #555;
+  margin-top: 4px;
+}
+
+/* Tooltip for parking personality bar chart */
+.parking-bar-tooltip {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  pointer-events: none;
+  z-index: 2000;
+  display: none;
+  white-space: nowrap;
+}
+
+
+/* ---------------------------------------------------------
+   Hotspot pulse circles
+--------------------------------------------------------- */
+
+#hotspot-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: none;
+  z-index: 500;         
+}
+
+.hotspot {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 224, 50, 0.85);   
+  box-shadow: 0 0 18px 8px rgba(50, 84, 255, 0.55); 
+  animation: pulse 1.6s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%   { transform: scale(1);   opacity: 0.9; }
+  50%  { transform: scale(2.1); opacity: 0.65; }
+  100% { transform: scale(1);   opacity: 0.9; }
+}
+
+/* ---------------------------------
+   Animation / Scenario Styles
+   --------------------------------- */
+
+.animation-inner {
+  width: 100%;
+  max-width: 600px;
+}
+
+.scenario-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+.scenario-panel {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.scenario-panel-header h4 {
+  margin: 0 0 2px;
+  font-size: 1rem;
+}
+
+.scenario-tag {
+  margin: 0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+}
+
+.scenario-tag-curb { color: #0b7285; }
+.scenario-tag-garage { color: #b02a37; }
+
+/* Game-like “road” scene */
+.scene {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 180px;
+  background: linear-gradient(#7dd3fc 0, #7dd3fc 45%, #65a30d 45%, #65a30d 100%);
+}
+
+/* Sky / hills / grass */
+.scene-sky {
+  position: absolute;
+  inset: 0 0 55% 0;
+  background: #7dd3fc;
+}
+
+.scene-hills {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 25%;
+  height: 20%;
+  background-image: radial-gradient(circle at 10% 80%, #7c2d12 0, #7c2d12 40%, transparent 41%),
+    radial-gradient(circle at 35% 90%, #92400e 0, #92400e 42%, transparent 43%),
+    radial-gradient(circle at 65% 85%, #7c2d12 0, #7c2d12 38%, transparent 39%),
+    radial-gradient(circle at 90% 80%, #92400e 0, #92400e 44%, transparent 45%);
+  opacity: 0.8;
+}
+
+.scene-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 45%;
+  background: linear-gradient(#4d7c0f 0, #15803d 100%);
+}
+
+/* Road */
+.scene-road {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 70%;
+  height: 85%;
+  transform: translateX(-50%);
+  background: #111827;
+  clip-path: polygon(46% 0%, 54% 0%, 100% 100%, 0% 100%);
+}
+
+.scene-road-center {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-image: linear-gradient(
+    to bottom,
+    #f9fafb 0,
+    #f9fafb 20%,
+    transparent 20%,
+    transparent 35%
+  );
+  background-size: 100% 20px;
+  transform: translateX(-50%);
+  opacity: 0.9;
+}
+
+.scene-road-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #e5e7eb;
+  opacity: 0.8;
+}
+
+.scene-road-edge.left { left: 18%; }
+.scene-road-edge.right { right: 18%; }
+
+/* Sidewalk & Building */
+.scene-sidewalk.right {
+  position: absolute;
+  right: 0;
+  top: 45%;
+  bottom: 0;
+  width: 18%;
+  background: #e5e7eb;
+}
+
+.scene-building {
+  position: absolute;
+  right: 4%;
+  bottom: 34%;
+  width: 18%;
+  height: 32%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.building-body {
+  width: 90%;
+  height: 75%;
+  background: #1d4ed8;
+  border-radius: 6px 6px 3px 3px;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.3);
+}
+
+.building-door {
+  width: 26%;
+  height: 20%;
+  margin-bottom: 4%;
+  background: #f9fafb;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.4);
+}
+
+/* Curb spots */
+.scene-curb-spot {
+  position: absolute;
+  width: 20px;
+  height: 9px;
+  background: #22c55e;
+  border-radius: 2px;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.7);
+}
+
+.scene-curb-spot.curb-a { right: 21%; bottom: 28%; }
+.scene-curb-spot.curb-b { right: 21%; bottom: 28%; }
+.scene-curb-spot.full {
+  background: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.8);
+}
+
+/* Garage */
+.scene-garage {
+  position: absolute;
+  left: 4%;
+  bottom: 72%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.garage-building {
+  width: 34px;
+  height: 20px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.9);
+}
+
+.garage-sign {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #f97316;
+  color: #111827;
+  font-weight: 700;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Car + Walker */
+.scene-car {
+  position: absolute;
+  bottom: 8%;
+  left: 50%;
+  width: 34px;
+  height: 16px;
+  transform: translateX(-50%);
+  background: #ef4444;
+  border-radius: 10px 10px 4px 4px;
+  box-shadow: 0 3px 0 rgba(15, 23, 42, 0.7);
+}
+
+.scene-car::before {
+  content: "";
+  position: absolute;
+  inset: 3px 6px 7px;
+  border-radius: 6px 6px 3px 3px;
+  background: #1f2937;
+}
+
+.scene-car::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: -3px;
+  height: 5px;
+  background: #111827;
+  border-radius: 99px;
+}
+
+.scene-walker {
+  position: absolute;
+  font-size: 18px;
+  opacity: 0;
+}
+
+/* Walk paths */
+.walk-path {
+  position: absolute;
+  border-top: 2px dashed rgba(251, 191, 36, 0.9);
+  transform-origin: left center;
+  opacity: 0.2;
+}
+
+.walk-path-a {
+  right: 20%;
+  bottom: 30%;
+  width: 12%;
+  transform: translateX(0) rotate(0deg);
+}
+
+.walk-path-b {
+  left: 6%;
+  bottom: 72%;
+  width: 75%;
+  transform: translateX(0) rotate(5deg);
+}
+
+/* Metrics */
+.scenario-metrics {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+.metric-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Animations */
+.scenario-panel.scenario-a.playing .car-a { animation: drive-short 3s ease-out forwards; }
+.scenario-panel.scenario-a.playing .walker-a { animation: walk-short 3s 3.1s linear forwards; }
+.scenario-panel.scenario-b.playing .car-b { animation: drive-long 4s ease-out forwards; }
+.scenario-panel.scenario-b.playing .walker-b { animation: walk-long 4s 4.2s linear forwards; }
+
+.scenario-play-btn {
+  margin-top: 8px;
+  align-self: flex-start;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.8);
+  background: #f9fafb;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease-out;
+}
+
+.scenario-play-btn:hover {
+  background: #e0f2fe;
+  border-color: #0ea5e9;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+  transform: translateY(-1px);
+}
+
+.scenario-legend {
+  margin-top: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 18px;
+  font-size: 0.8rem;
+  color: #4b5563;
+}
+
+.scenario-legend-item { display: flex; align-items: center; gap: 6px; }
+.scenario-legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.18);
+}
+
+.swatch-curb-open { background: #22c55e; }
+.swatch-curb-full { background: #ef4444; }
+.swatch-destination { background: #1d4ed8; }
+
+/* Keyframes */
+@keyframes drive-short {
+  0% { bottom: 8%; left: 50%; transform: translateX(-50%) scale(1); }
+  60% { bottom: 26%; left: 50%; transform: translateX(-50%) scale(0.85); }
+  100% { bottom: 26%; left: 74%; transform: translateX(-50%) scale(0.8); }
+}
+
+@keyframes walk-short {
+  0% { opacity: 1; bottom: 26%; left: 74%; }
+  100% { opacity: 1; bottom: 38%; left: 86%; }
+}
+
+@keyframes drive-long {
+  0% { bottom: 8%; left: 50%; transform: translateX(-50%) scale(1); }
+  40% { bottom: 22%; left: 50%; transform: translateX(-50%) scale(0.85); }
+  100% { bottom: 72%; left: 10%; transform: translateX(-50%) scale(0.8); }
+}
+
+@keyframes walk-long {
+  0% { opacity: 1; bottom: 72%; left: 10%; }
+  40% { opacity: 1; bottom: 36%; left: 30%; }
+  75% { opacity: 1; bottom: 40%; left: 56%; }
+  100% { opacity: 1; bottom: 38%; left: 86%; }
+}
+
+/* Ridgeline tooltip & Deep Dive */
+.ridgeline-tooltip {
+  background: rgba(0, 0, 0, 0.85) !important;
+  color: white !important;
+  padding: 12px 14px !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  pointer-events: none !important;
+  z-index: 1000 !important;
+  max-width: 250px !important;
+}
+
+.ridgeline-tooltip strong { color: #fff; font-weight: 600; }
+.y-axis-label { transition: all 0.2s ease; }
+.y-axis-label:hover { fill: #2468e8 !important; }
+
+#ridgeline-container {
+  margin-top: 5px;
+  display: flex;
+  justify-content: center; 
+}
+#ridgeline-chart { width: 100%; max-width: 900px; }
