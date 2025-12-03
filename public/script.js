@@ -13,6 +13,11 @@ const map = L.map("map", {
   zoomControl: false
 });
 
+// NEW: Create a custom pane for the radius tool to ensure it sits ON TOP of markers/lines
+map.createPane('radiusPane');
+map.getPane('radiusPane').style.zIndex = 620; // Higher than MarkerPane (600)
+map.getPane('radiusPane').style.pointerEvents = 'none'; // Allow clicks to pass through if needed
+
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
   attribution: '&copy; OpenStreetMap contributors'
@@ -396,10 +401,12 @@ map.on("mousemove", (e) => {
     radiusCircle = L.circle(e.latlng, {
       radius: currentRadius, 
       color: "#333",
-      weight: 1,
+      weight: 3,
       fillColor: "#aaa",
       fillOpacity: 0.1,
-      dashArray: "5, 5"
+      dashArray: "5, 5",
+      pane: "radiusPane", // Ensure circle is on top using custom pane
+      interactive: false
     }).addTo(map);
   } else {
     radiusCircle.setLatLng(e.latlng);
