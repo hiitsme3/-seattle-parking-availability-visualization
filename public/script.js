@@ -936,7 +936,37 @@ function buildRidgelineChart() {
     if (gw > 0) row.append("text").attr("x", garageStart + gw + 5).attr("y", yScale.bandwidth() / 2 + 4).text(d.garageCount).attr("font-size", "10px").attr("fill", isActive ? "#333" : "#999");
     
     row.on("mouseover", (e) => {
-       tooltip.html(`<strong>${d.area}</strong><br/>Garages: ${d.garageCount}<br/>Segments: ${d.totalCurb}`).style("opacity", 1).style("left", (e.pageX + 15) + "px").style("top", (e.pageY - 10) + "px");
+       // Generate breakdown HTML
+       const breakdown = d.curbBreakdown.map(c => {
+          if (c.proportion < 0.01) return ""; // Hide very small/zero
+          const pct = Math.round(c.proportion * 100);
+          const color = curbColors(c.category);
+          // Simple cleanup for display
+          let label = c.category; 
+          if(label === "LOADING / UNLOADING") label = "Loading";
+          if(label === "PAID PARKING") label = "Paid";
+          if(label === "NO PARKING") label = "No Parking";
+          if(label === "OTHERS") label = "Other";
+          
+          return `<div style="display:flex;align-items:center;gap:5px;font-size:11px;">
+                    <span style="width:8px;height:8px;border-radius:50%;background:${color};"></span>
+                    <span style="flex:1;">${label}</span>
+                    <strong>${pct}%</strong>
+                  </div>`;
+       }).join("");
+
+       tooltip.html(`
+         <div style="margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:4px;">
+           <strong>${d.area}</strong>
+         </div>
+         <div style="margin-bottom:8px;font-size:11px;">
+           Garages: <strong>${d.garageCount}</strong>
+         </div>
+         ${breakdown}
+       `)
+       .style("opacity", 1)
+       .style("left", (e.pageX + 15) + "px")
+       .style("top", (e.pageY - 10) + "px");
     }).on("mouseout", () => tooltip.style("opacity", 0));
   });
   
