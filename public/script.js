@@ -142,20 +142,32 @@ if (availableToggleButton) {
 
 function formatProps(feature) {
   if (!feature || !feature.properties) return "No details available.";
-  const props = feature.properties;
+  const p = feature.properties;
   
-  const name = props.NAME || props.FACILITY_N || props.BlockfaceID || props.BLOCKFACE || null;
-  const type = props.PARKING_TY || props.STREETUSE || props.SPACE_TYPE || null;
-  const rate = props.RATE || props.DAILYMAX || props.HOURLY_RAT || null;
-  const lines = [];
-  if (name) lines.push(`<strong>${name}</strong>`);
-  if (type) lines.push(`Type: ${type}`);
-  if (rate) lines.push(`Rate: ${rate}`);
-  if (lines.length === 0) {
-    const keys = Object.keys(props).slice(0, 3);
-    keys.forEach((k) => lines.push(`${k}: ${props[k]}`));
+  // --- 1. GARAGE LOGIC ---
+  const garageName = p.FAC_NAME || p.FACILITY_NAME || p.DEA_FACILITY_NAME || p.FACILITY_N || p.NAME;
+  
+  if (garageName) {
+    const address = p.ADDRESS || p.DEA_ADDRESS || p.Entrances || "";
+    const cap = p.TOTAL_CAP ? `${p.TOTAL_CAP} spots` : "";
+
+    return `
+      <div style="margin-bottom:4px;"><strong>${garageName}</strong></div>
+      <div style="font-size:0.9em; color:#555;">${address}</div>
+      ${cap ? `<div style="font-size:0.85em; margin-top:4px;">${cap}</div>` : ""}
+    `;
   }
-  return lines.join("<br/>");
+
+  // --- 2. CURB LOGIC ---
+  const neighborhood = p.PAIDAREA || "Seattle Area";
+  const category = getCategoryLabel(p.CATEGORY, p.SPACETYPEDESC);
+
+  // Removed the 'name' (black text) line to fix duplicates.
+  // Now it only shows the Neighborhood and the Category under the blue title.
+  return `
+    <div style="font-size:0.9em; color:#555;">${neighborhood}</div>
+    <div style="font-size:0.85em; margin-top:4px; color:#2468e8;">${category}</div>
+  `;
 }
 
 function updateHoverInfo(htmlText) {
@@ -630,11 +642,9 @@ function buildLayers(curbData, garageData) {
           if (isRadiusActive) return; // FIX: Disable tooltip if Radius Tool is active
           if (filterAvailableOnly && isRestrictedCurb(feature)) return;
           e.target.setStyle({ weight: 4, fillOpacity: 1 });
-          let label = "Curb segment";
-          if (showCategoryColoring) {
-            label = getCategoryLabel(feature.properties.CATEGORY, feature.properties.SPACETYPEDESC);
-          }
-          updateHoverInfo(`<span style="color:${e.target.options.color};font-weight:bold;">${label}</span><br/>${formatProps(feature)}`);
+          
+          // --- FIXED: Removed explicit label since it's now handled inside formatProps ---
+          updateHoverInfo(formatProps(feature));
         },
         mouseout: (e) => {
           if (isRadiusActive) return; // FIX
@@ -656,7 +666,8 @@ function buildLayers(curbData, garageData) {
         mouseover: () => {
           if (isRadiusActive) return; // FIX: Disable tooltip if Radius Tool is active
           layer.setStyle({ radius: 6, weight: 2 });
-          updateHoverInfo(`<span style="color:#7b1fa2;font-weight:bold;">Public garage</span><br/>${formatProps(feature)}`);
+          // --- FIXED: Uses formatProps for garages too ---
+          updateHoverInfo(formatProps(feature));
         },
         mouseout: () => {
           if (isRadiusActive) return; // FIX

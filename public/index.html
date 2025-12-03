@@ -30,7 +30,18 @@
   <!-- Top Hero -->
   <header class="hero">
     <div class="hero-inner">
-      <h1>Seattle Parking Supply: Curb vs Garages</h1>
+      <div class="title-wrapper">
+        <h1>Seattle Parking Supply: Curb vs Garages</h1>
+        
+        <!-- Fun Animation Container -->
+        <div class="header-anim" aria-hidden="true">
+          <div class="anim-track"></div>
+          <div class="anim-sign no-park">🚫</div>
+          <div class="anim-sign yes-park">🅿️</div>
+          <div class="anim-car">🚗</div>
+        </div>
+      </div>
+
       <p>
         An explorable explanation of how Seattle combines <strong>paid curb spaces</strong>
         and <strong>public garages</strong> to create its parking supply — and where that
@@ -459,10 +470,51 @@
     </section>
   </main>
   
+  <!-- NEW: Summary & References (Outside Scrollable) -->
+  <section class="outro">
+    <div class="outro-inner">
+      <div class="summary-section">
+        <h2>Summary</h2>
+        <p>
+          Seattle's parking landscape is a complex balance between curb-side convenience and off-street capacity. 
+          As shown in this visualization, paid curb spaces dominate the street grid in commercial districts, yet 
+          they are frequently restricted by loading zones and no-stopping rules. Public garages provide the bulk 
+          of the actual vehicle capacity in dense areas like Downtown, though they are often less visible to the 
+          casual driver cruising for a spot.
+        </p>
+        <p>
+          By understanding the relationship between these two supply types, city planners and drivers alike can 
+          make better decisions—whether that means choosing a garage directly to avoid cruising, or adjusting 
+          curb regulations to better serve high-demand neighborhoods.
+        </p>
+      </div>
+      
+      <div class="references-section">
+        <h2>Data Sources & References</h2>
+        <p>This project utilizes open data provided by the Seattle City GIS Program.</p>
+        <ul>
+          <li>
+            <a href="https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::paid-area-curb-spaces-1/about" target="_blank" rel="noopener">
+              Seattle Paid Area Curb Spaces (Dataset)
+            </a>
+          </li>
+          <li>
+            <a href="https://data-seattlecitygis.opendata.arcgis.com/maps/3029d63401544cd6b9783ef1bfb40b91" target="_blank" rel="noopener">
+              Seattle Public Garages (Map & Data)
+            </a>
+          </li>
+          <li>
+            <a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet.js</a> & 
+            <a href="https://d3js.org/" target="_blank" rel="noopener">D3.js</a> for visualization.
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
   <footer class="footer">
     <p>
-      Created for a data visualization project • Data sources: City of Seattle Open Data
-      (Paid Area Curb Spaces &amp; Public Garages).
+      Created for a data visualization project • Data sources: City of Seattle Open Data.
     </p>
   </footer>
 
