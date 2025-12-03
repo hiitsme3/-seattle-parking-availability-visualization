@@ -53,10 +53,10 @@
 
         <!-- Hotspot overlay -->
         <div id="hotspot-layer"></div>
-
+        
         <div id="map-legend">
           <h3>Legend</h3>
-          <!-- Standard Legend (Steps 1-9) -->
+          <!-- Standard Legend -->
           <div id="legend-standard">
             <div class="legend-item">
               <span class="legend-swatch curb"></span>
@@ -112,9 +112,11 @@
         </div>
       </div>
 
-      <!-- VIEW 2: The Animation (Visible for Step 11) -->
+      <!-- VIEW 2: The Animations (Visible for Steps 11-12) -->
       <div id="animation-view" class="is-hidden">
-        <div class="animation-inner">
+        
+        <!-- Step 11 Content: Scenarios A/B -->
+        <div id="scenario-container" class="animation-inner">
           <div class="scenario-header">
             <h3>Visualizing the Trade-off</h3>
             <p>Comparing the experience of curb parking vs. garage parking.</p>
@@ -221,6 +223,60 @@
             </article>
           </div>
         </div>
+
+        <!-- Step 12 Content: The Cruising Simulation -->
+        <div id="cruising-container" class="animation-inner is-hidden">
+          <div class="scenario-header">
+            <h3>The Reality: "Cruising" for Parking</h3>
+            <p>Drivers often circle blocks looking for that one open curb spot, adding to congestion.</p>
+          </div>
+          
+          <div class="cruising-wrapper">
+            <div class="cruising-map">
+              <!-- Background grid blocks -->
+              <div class="c-block b1"></div>
+              <div class="c-block b2"></div>
+              <div class="c-block b3"></div>
+              <div class="c-block b4"></div>
+              
+              <!-- Parking Spots -->
+              <div class="c-spot s1 taken" title="Taken"></div>
+              <div class="c-spot s2 open" title="Open!"></div>
+              <div class="c-spot s3 taken" title="Taken"></div>
+              <div class="c-spot s4 taken" title="Taken"></div>
+              <div class="c-spot s5 taken" title="Taken"></div>
+              <div class="c-spot s6 taken" title="Taken"></div>
+              <div class="c-spot s7 taken"  title="Taken"></div>
+              
+              <!-- The Car -->
+              <div id="cruising-car" class="c-car">🚗</div>
+              
+              <!-- Thought Bubble -->
+              <div id="cruising-bubble" class="c-bubble">Start loop...</div>
+            </div>
+            
+            <div class="cruising-controls">
+              <button id="btn-cruise-start">▶ Start Cruising</button>
+              <button id="btn-cruise-reset">↺ Reset</button>
+            </div>
+
+            <div class="cruising-stats">
+              <div class="stat-box">
+                <span class="stat-label">Spots Checked</span>
+                <span id="stat-spots" class="stat-val">0</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Wasted Time</span>
+                <span id="stat-time" class="stat-val">0 min</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Status</span>
+                <span id="stat-status" class="stat-val">Idle</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -283,6 +339,7 @@
         </p>
       </div>
 
+      <!-- Step 5: Original Overlap Text -->
       <div class="step" data-step="5">
         <h2>5. Curb vs Garages: Overlap</h2>
         <p>
@@ -291,21 +348,55 @@
         </p>
       </div>
 
+      <!-- Step 6: NEW Radius Tool -->
       <div class="step" data-step="6">
-        <h2>6. Hotspots Appear</h2>
-        <p>These glowing points highlight areas where curb and garage supply cluster tightly together.</p>
+        <h2>6. The 5-Minute Walk Test</h2>
+        <p>
+          Parking availability isn't just about city-wide totals; it's about what is close to <strong>you</strong>.
+        </p>
+        <p>
+          <strong>Hover your mouse over the map.</strong> A circle will appear representing a <strong>400m radius</strong> (roughly a 5-minute walk).
+        </p>
+        <p>
+          The chart below updates instantly to show the mix of Curb Segments vs. Garages within that walking distance.
+        </p>
+        
+        <!-- Chart placed inside the narrative flow -->
+        <div class="radius-story-container">
+          <div class="radius-header">
+            <h4>Local Supply Mix</h4>
+          </div>
+          <div class="radius-stats">
+            <svg id="radius-svg"></svg>
+            <div class="radius-text">
+              <div class="r-stat-row">
+                <span class="dot curb"></span>
+                <span id="r-curb-val">0</span> Segments
+              </div>
+              <div class="r-stat-row">
+                <span class="dot garage"></span>
+                <span id="r-garage-val">0</span> Garages
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="step" data-step="7">
-        <h2>7. Zooming into Downtown</h2>
+        <h2>7. Hotspots Appear</h2>
+        <p>These glowing points highlight areas where curb and garage supply cluster tightly together.</p>
+      </div>
+
+      <div class="step" data-step="8">
+        <h2>8. Zooming into Downtown</h2>
         <p>
           Zooming into central Seattle shows how curb segments trace the main corridors while
           garages occupy interior parcels.
         </p>
       </div>
 
-      <div class="step" data-step="8">
-        <h2>8. What the Data Suggests</h2>
+      <div class="step" data-step="9">
+        <h2>9. What the Data Suggests</h2>
         <p>
           This visualization focuses on <em>where</em> supply exists. Even a simple view like this raises questions:
         </p>
@@ -315,25 +406,7 @@
         </ul>
       </div>
 
-      <div class="step" data-step="9">
-        <h2>9. Different “Parking Personalities”</h2>
-        <p>
-          Some areas are <strong>curb-heavy</strong> while others are <strong>garage-heavy</strong>.
-          This mix shapes how hard parking <em>feels</em>.
-        </p>
-        <svg
-          id="personality-chart"
-          width="640"
-          height="320"
-          role="img"
-          aria-label="Curb versus garage supply by paid parking area"
-        ></svg>
-        <p id="personality-selection-caption" class="personality-caption">
-          Click the map or bars to focus on a specific area.
-        </p>
-      </div>
-
-      <!-- ⭐ Step 10: Deep Dive Breakdown -->
+      <!-- Step 10: Deep Dive -->
       <div class="step" data-step="10" style="min-height: 80vh;">
         <h2>10. Deep Dive: Area Composition</h2>
         <p>
@@ -350,7 +423,7 @@
         </div>
       </div>
 
-      <!-- ⭐ Step 11: Animation -->
+      <!-- Step 11: Human Experience -->
       <div class="step" data-step="11">
         <h2>11. The Human Experience</h2>
         <p>
@@ -364,6 +437,22 @@
         </p>
         <p>
           <strong>Scenario B:</strong> The curb is full (red). The driver must divert to a garage and walk several blocks.
+        </p>
+      </div>
+
+      <!-- Step 12: The Cruising Reality -->
+      <div class="step" data-step="12">
+        <h2>12. The Cruising Reality</h2>
+        <p>
+          Often, curb parking isn't just "full" or "empty"—it's a game of chance.
+        </p>
+        <p>
+          When demand is high (like 95%+ occupancy), finding that <strong>one open spot</strong> requires 
+          circling the block repeatedly. This behavior is called "cruising."
+        </p>
+        <p>
+          <strong>Simulation:</strong> Press <strong>Start Cruising</strong> to simulate a driver looking for parking in a saturated neighborhood. 
+          Watch how time ticks up as they check spot after spot.
         </p>
       </div>
 

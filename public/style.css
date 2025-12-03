@@ -1,3 +1,4 @@
+/* ... Previous Styles ... */
 * {
   box-sizing: border-box;
 }
@@ -90,7 +91,13 @@ body {
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
-  /* We use opacity/visibility so transitions work, but ensure pointer events are gone */
+  display: none !important; /* Force display none for layout */
+}
+
+/* Just opacity utility if we want fading without removing from flow */
+.opacity-0 {
+  opacity: 0;
+  pointer-events: none;
 }
 
 #map {
@@ -138,7 +145,7 @@ body {
   border: 1px solid #6D28D9;;
 }
 
-/* Category Legend Swatches (Step 10) */
+/* Category Legend Swatches (Step 9) */
 .legend-swatch.cat-paid { background: #2468e8; border: 1px solid #1a4db0; }
 .legend-swatch.cat-nopark { background: #cc0000; border: 1px solid #990000; }
 .legend-swatch.cat-load { background: #ff9900; border: 1px solid #cc7a00; }
@@ -766,3 +773,198 @@ body {
   justify-content: center; 
 }
 #ridgeline-chart { width: 100%; max-width: 900px; }
+
+
+/* ------------------------------------------------------------------
+   STEP 11: Cruising Simulation
+   ------------------------------------------------------------------ */
+.cruising-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.cruising-map {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  background: #334155; /* Road color */
+  border-radius: 8px;
+  border: 4px solid #475569;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* Grid Blocks (Buildings) */
+.c-block {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px #cbd5e1;
+}
+
+/* 2x2 Grid Layout for blocks */
+.c-block.b1 { top: 20px; left: 20px; }
+.c-block.b2 { top: 20px; right: 20px; }
+.c-block.b3 { bottom: 20px; left: 20px; }
+.c-block.b4 { bottom: 20px; right: 20px; }
+
+/* Parking Spots */
+.c-spot {
+  position: absolute;
+  width: 24px;
+  height: 14px;
+  border-radius: 2px;
+  background: #ef4444; /* Default: Taken */
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.3);
+}
+.c-spot.open { background: #22c55e; }
+
+/* Positioning spots around the blocks */
+.c-spot.s1 { top: 130px; left: 60px; transform: rotate(0deg); } /* Mid left horz */
+.c-spot.s2 { top: 60px; left: 130px; transform: rotate(90deg); } /* Top mid vert */
+.c-spot.s3 { top: 60px; right: 130px; transform: rotate(90deg); } /* Top mid vert */
+.c-spot.s4 { top: 130px; right: 60px; transform: rotate(0deg); } /* Mid right horz */
+.c-spot.s5 { bottom: 130px; right: 60px; transform: rotate(0deg); } /* Mid right horz */
+.c-spot.s6 { bottom: 60px; right: 130px; transform: rotate(90deg); } /* Bot mid vert */
+.c-spot.s7 { bottom: 60px; left: 130px; transform: rotate(90deg); } /* Bot mid vert (Winner) */
+
+/* The Cruising Car */
+.c-car {
+  position: absolute;
+  font-size: 24px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 280px; 
+  left: 20px;
+  z-index: 10;
+  transition: all 0.5s ease-in-out; 
+}
+
+/* Thought Bubble */
+.c-bubble {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 20;
+  white-space: nowrap;
+}
+.c-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  margin-left: -4px;
+  border-width: 4px 4px 0;
+  border-style: solid;
+  border-color: #fff transparent transparent transparent;
+}
+
+.cruising-controls {
+  display: flex;
+  gap: 10px;
+}
+#btn-cruise-start, #btn-cruise-reset {
+  padding: 8px 16px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+#btn-cruise-start:hover { background: #f1f5f9; }
+
+.cruising-stats {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  justify-content: center;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 10px;
+}
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.stat-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 700;
+}
+.stat-val {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+
+/* ------------------------------------------------------------------
+   STEP 6: Radius Tool (Inside Story)
+   ------------------------------------------------------------------ */
+.radius-story-container {
+  margin-top: 16px;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.radius-header {
+  margin-bottom: 12px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 6px;
+}
+.radius-header h4 {
+  margin: 0; 
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #333;
+}
+
+.radius-stats {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  justify-content: center;
+}
+
+.radius-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.r-stat-row {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.r-stat-row .dot {
+  width: 12px; height: 12px; border-radius: 50%; display: inline-block;
+}
+.r-stat-row .dot.curb { background: #2468e8; }
+.r-stat-row .dot.garage { background: #7b1fa2; }
