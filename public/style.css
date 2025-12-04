@@ -252,6 +252,25 @@ body {
   color: #333;
 }
 
+/* Zoom control styling */
+.leaflet-control-zoom {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  font-size: 14px;
+}
+
+.leaflet-control-zoom a {
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+}
+
+.leaflet-top.leaflet-right .leaflet-control-zoom {
+  margin-top: 10px;
+  margin-right: 10px;
+}
+
 /* Mini chart */
 #mini-chart {
   padding: 8px 16px 12px;
@@ -303,6 +322,12 @@ body {
   border-color: #2468e8;
   background-color: #f5f7ff;
   transform: translateX(4px);
+}
+
+.step .main-takeaway {
+  border-left: 3px solid #ccc;
+  padding-left: 0.75rem;
+  font-weight: 500;
 }
 
 /* Make vector shapes fade nicely */

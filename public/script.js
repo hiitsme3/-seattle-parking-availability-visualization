@@ -23,6 +23,11 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
+L.control.zoom({
+  position: "topright"
+}).addTo(map);
+
+
 // Layers & data
 let curbLayer = null;
 let garageLayer = null;
