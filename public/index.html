@@ -5,35 +5,41 @@
   <title>Seattle Parking: From Supply Maps to Street-Level Experience</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Styles -->
+  <!-- =========================================
+       STYLESHEETS & LIBRARIES
+       ========================================= -->
+  <!-- Custom Styles -->
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Leaflet -->
+  <!-- Leaflet CSS (Map) -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""
   />
+  <!-- Leaflet JS -->
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""
   ></script>
 
-  <!-- D3 + Scrollama -->
+  <!-- D3.js (Charts) + Scrollama (Scrollytelling Logic) -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://unpkg.com/scrollama@3.2.0/build/scrollama.min.js"></script>
 </head>
 
 <body>
-  <!-- Top Hero -->
+  <!-- =========================================
+       HERO SECTION (Title & Intro)
+       ========================================= -->
   <header class="hero">
     <div class="hero-inner">
       <div class="title-wrapper">
         <h1>Seattle Parking: From Supply Maps to Street-Level Experience</h1>
         
-        <!-- Fun Animation Container -->
+        <!-- Header Animation: Little looped traffic scene next to title -->
         <div class="header-anim" aria-hidden="true">
           <div class="anim-track"></div>
           <div class="anim-sign no-park">🚫</div>
@@ -57,21 +63,25 @@
     </div>
   </header>
 
-  <!-- Scrollytelling Section -->
+  <!-- =========================================
+       MAIN SCROLLYTELLING CONTAINER
+       ========================================= -->
   <main id="scrolly">
-    <!-- Left: Sticky Container -->
+    
+    <!-- LEFT COLUMN: Sticky Visuals (Map & Animations) -->
     <div id="map-container">
       
-      <!-- VIEW 1: The Map and its controls (Visible for Steps 1-10) -->
+      <!-- VIEW 1: The Leaflet Map (Visible for Steps 1-10) -->
       <div id="map-view">
         <div id="map"></div>
 
-        <!-- Hotspot overlay -->
+        <!-- Hotspot overlay layer (pulsing circles for Step 7) -->
         <div id="hotspot-layer"></div>
         
+        <!-- Interactive Legend -->
         <div id="map-legend">
           <h3>Legend</h3>
-          <!-- Standard Legend -->
+          <!-- Standard Legend (Steps 1-9) -->
           <div id="legend-standard">
             <div class="legend-item">
               <span class="legend-swatch curb"></span>
@@ -83,7 +93,7 @@
             </div>
           </div>
           
-          <!-- Category Legend (Step 10 only) -->
+          <!-- Detailed Category Legend (Visible only in Step 10) -->
           <div id="legend-category" style="display:none;">
             <div class="legend-item">
               <span class="legend-swatch cat-paid"></span>
@@ -108,12 +118,14 @@
           </div>
         </div>
 
+        <!-- Dynamic Caption Bar (Text updates via JS) -->
         <div id="map-caption">
           <p id="map-caption-text">
             Initial view of central Seattle. Scroll to reveal curb spaces and garages.
           </p>
         </div>
 
+        <!-- Hover Info Panel (Tooltip area) -->
         <div id="hover-info">
           <h3>Feature info</h3>
           <div id="hover-info-body">
@@ -121,6 +133,7 @@
           </div>
         </div>
 
+        <!-- Mini Bar Chart (Curb vs Garage totals) -->
         <div id="mini-chart">
           <h3>Curb vs Garage counts</h3>
           <svg id="mini-chart-svg" width="100%" height="120"></svg>
@@ -128,9 +141,10 @@
       </div>
 
       <!-- VIEW 2: The Animations (Visible for Steps 11-12) -->
+      <!-- This overlay covers the map when active -->
       <div id="animation-view" class="is-hidden">
         
-        <!-- Step 11 Content: Scenarios A/B -->
+        <!-- Step 11 Content: Scenarios A/B (Comparison) -->
         <div id="scenario-container" class="animation-inner">
           <div class="scenario-header">
             <h3>Visualizing the Trade-off</h3>
@@ -153,12 +167,13 @@
           </div>
 
           <div class="scenario-grid">
-            <!-- Scenario A -->
+            <!-- Scenario A: Curb Parking Animation -->
             <article class="scenario-panel scenario-a">
               <header class="scenario-panel-header">
                 <h4>Scenario A · Curb nearby</h4>
                 <p class="scenario-tag scenario-tag-curb">Convenient</p>
               </header>
+              <!-- CSS Scene: A -->
               <div class="scene">
                 <div class="scene-sky"></div>
                 <div class="scene-hills"></div>
@@ -193,12 +208,13 @@
               </div>
             </article>
 
-            <!-- Scenario B -->
+            <!-- Scenario B: Garage Parking Animation -->
             <article class="scenario-panel scenario-b">
               <header class="scenario-panel-header">
                 <h4>Scenario B · Garage</h4>
                 <p class="scenario-tag scenario-tag-garage">Reliable but far</p>
               </header>
+              <!-- CSS Scene: B -->
               <div class="scene">
                 <div class="scene-sky"></div>
                 <div class="scene-hills"></div>
@@ -239,7 +255,7 @@
           </div>
         </div>
 
-        <!-- Step 12 Content: The Cruising Simulation -->
+        <!-- Step 12 Content: The "Cruising" Simulation (Looping Game) -->
         <div id="cruising-container" class="animation-inner is-hidden">
           <div class="scenario-header">
             <h3>The Reality: "Cruising" for Parking</h3>
@@ -258,6 +274,7 @@
           </div>
           
           <div class="cruising-wrapper">
+            <!-- Top-Down Map View for Cruising -->
             <div class="cruising-map">
               <!-- Background grid blocks -->
               <div class="c-block b1"></div>
@@ -265,7 +282,7 @@
               <div class="c-block b3"></div>
               <div class="c-block b4"></div>
               
-              <!-- Parking Spots -->
+              <!-- Parking Spots (Most taken, one open) -->
               <div class="c-spot s1 taken" title="Taken"></div>
               <div class="c-spot s2 open" title="Open!"></div>
               <div class="c-spot s3 taken" title="Taken"></div>
@@ -274,10 +291,10 @@
               <div class="c-spot s6 taken" title="Taken"></div>
               <div class="c-spot s7 taken"  title="Taken"></div>
               
-              <!-- The Car -->
+              <!-- The Car Emoji -->
               <div id="cruising-car" class="c-car">🚗</div>
               
-              <!-- Thought Bubble -->
+              <!-- Thought Bubble for Car -->
               <div id="cruising-bubble" class="c-bubble">Start loop...</div>
             </div>
             
@@ -286,6 +303,7 @@
               <button id="btn-cruise-reset">↺ Reset</button>
             </div>
 
+            <!-- Cruising Stats (Time Wasted Counter) -->
             <div class="cruising-stats">
               <div class="stat-box">
                 <span class="stat-label">Spots Checked</span>
@@ -307,8 +325,9 @@
 
     </div>
 
-    <!-- Right: Narrative Steps -->
+    <!-- RIGHT COLUMN: Narrative Steps (Scrollama Triggers) -->
     <section id="story">
+      <!-- Step 1: Intro -->
       <div class="step" data-step="1">
         <h2>1. The Shape of Seattle's Parking Network</h2>
         <p>
@@ -321,6 +340,7 @@
         </p>
       </div>
 
+      <!-- Step 2: Curb Supply -->
       <div class="step" data-step="2">
         <h2>2. Paid Area Curb Spaces</h2>
         <p>
@@ -333,6 +353,7 @@
         </p>
       </div>
 
+      <!-- Step 3: Restrictions -->
       <div class="step" data-step="3">
         <h2>3. Where You Actually Can’t Park</h2>
         <p>
@@ -343,6 +364,7 @@
           In this view, <strong>red curb segments</strong> mark places where a typical driver
           can’t just park and walk away. Blue segments are more realistically available to most drivers.
         </p>
+        <!-- Toggle control for filtering map -->
         <div class="toggle-row">
           <button id="available-toggle" class="toggle-button" type="button" aria-pressed="false">
             Show only available curb spaces
@@ -353,6 +375,7 @@
         </div>
       </div>
 
+      <!-- Step 4: Garages -->
       <div class="step" data-step="4">
         <h2>4. Public Garages</h2>
         <p>
@@ -365,7 +388,7 @@
         </p>
       </div>
 
-      <!-- Step 5: Original Overlap Text -->
+      <!-- Step 5: Overlap -->
       <div class="step" data-step="5">
         <h2>5. Curb vs Garages: Overlap</h2>
         <p>
@@ -374,6 +397,7 @@
         </p>
       </div>
 
+      <!-- Step 6: Hotspot Highlights -->
       <div class="step" data-step="7">
         <h2>6. Hotspots Appear</h2>
         <p>
@@ -384,7 +408,7 @@
         </p>
       </div>
 
-      <!-- Step 6: NEW Radius Tool -->
+      <!-- Step 7: Radius Tool (Interactive Widget) -->
       <div class="step" data-step="6">
         <h2>7. The 5-Minute Walk Test</h2>
         <p>
@@ -397,7 +421,7 @@
           The chart below updates instantly to show the mix of Curb Segments vs. Garages within that walking distance.
         </p>
         
-        <!-- Chart placed inside the narrative flow -->
+        <!-- Embedded D3 Donut Chart for Radius Tool -->
         <div class="radius-story-container">
           <div class="radius-header">
             <h4>Local Supply Mix</h4>
@@ -418,8 +442,7 @@
         </div>
       </div>
 
-      
-
+      <!-- Step 8: Zoom Transition -->
       <div class="step" data-step="8">
         <h2>8. Zooming into Downtown</h2>
         <p>
@@ -430,6 +453,7 @@
         </p>
       </div>
 
+      <!-- Step 9: Reset View -->
       <div class="step" data-step="9">
         <h2>9. What the Data Suggests</h2>
         <p>
@@ -440,7 +464,7 @@
         </p>
       </div>
 
-      <!-- Step 10: Deep Dive -->
+      <!-- Step 10: Deep Dive (Ridgeline Chart) -->
       <div class="step" data-step="10" style="min-height: 80vh;">
         <h2>10. Deep Dive: Area Composition</h2>
         <p>
@@ -452,12 +476,13 @@
           <strong>highlight that neighborhood</strong> in full color and see its detailed breakdown.
         </p>
 
+        <!-- D3 Container for Ridgeline Chart -->
         <div id="ridgeline-container">
           <svg id="ridgeline-chart"></svg>
         </div>
       </div>
 
-      <!-- Step 11: Human Experience -->
+      <!-- Step 11: Text for Animation Comparison -->
       <div class="step" data-step="11">
         <h2>11. The Human Experience</h2>
         <p>
@@ -474,7 +499,7 @@
         </p>
       </div>
 
-      <!-- Step 12: The Cruising Reality -->
+      <!-- Step 12: Text for Cruising Sim -->
       <div class="step" data-step="12">
         <h2>12. The Cruising Reality</h2>
         <p>
@@ -493,7 +518,9 @@
     </section>
   </main>
   
-  <!-- NEW: Summary & References (Outside Scrollable) -->
+  <!-- =========================================
+       OUTRO SECTION (Summary & References)
+       ========================================= -->
   <section class="outro">
     <div class="outro-inner">
       <div class="summary-section">
@@ -535,12 +562,14 @@
     </div>
   </section>
 
+  <!-- Footer -->
   <footer class="footer">
     <p>
       Created for a data visualization project • Data sources: City of Seattle Open Data.
     </p>
   </footer>
 
+  <!-- Main JavaScript File -->
   <script src="script.js"></script>
 </body>
 </html>
