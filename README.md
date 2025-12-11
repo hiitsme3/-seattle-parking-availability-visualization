@@ -19,7 +19,7 @@ References/examples consulted:
 - D3 documentation (arc/pie + transitions): https://d3js.org/api
 
 
-## Generative AI / AI References (Academic Integrity)
+## AI References
 
 We used a generative AI assistant (ChatGPT) for conceptual guidance and debugging help while implementing scrollytelling behavior and animation/transitions. Specifically, we asked for:
 
